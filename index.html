@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>PK Clothing</title>
+<meta name="description" content="PK Clothing — trendy, comfortable and affordable fashion in Nepal. Order directly on WhatsApp."/>
+<style>
+:root{
+  --black:#0a0a0a; --white:#fff; --muted:#777; --soft:#f7f7f5; --gold:#c9a05a; --line:#e7e7e7;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font-family:Inter,Arial,Helvetica,sans-serif;color:var(--black);background:var(--white)}
+a{text-decoration:none;color:inherit}
+.topbar{background:#000;color:#fff;text-align:center;padding:9px 16px;font-size:13px;letter-spacing:.5px}
+header{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.96);backdrop-filter:blur(9px);border-bottom:1px solid var(--line)}
+.nav{max-width:1180px;margin:auto;padding:12px 18px;display:flex;align-items:center;justify-content:space-between;gap:18px}
+.brand{display:flex;align-items:center;gap:12px}
+.brand img{width:72px;height:58px;object-fit:cover;object-position:center;border-radius:4px;background:#000}
+.brandname{font-weight:800;letter-spacing:2px}
+.navlinks{display:flex;gap:22px;font-size:14px;font-weight:600}
+.cta{background:#000;color:#fff;padding:11px 16px;border-radius:999px;font-size:14px;font-weight:700}
+.hero{max-width:1180px;margin:30px auto 0;padding:0 18px}
+.heroCard{display:grid;grid-template-columns:1.1fr .9fr;min-height:560px;background:var(--soft);border-radius:24px;overflow:hidden}
+.heroCopy{padding:64px;display:flex;flex-direction:column;justify-content:center}
+.kicker{color:var(--gold);font-weight:800;letter-spacing:2px;font-size:13px}
+h1{font-family:Georgia,serif;font-size:64px;line-height:.98;margin:14px 0 18px;font-weight:600}
+.heroCopy p{font-size:18px;line-height:1.6;color:#444;max-width:520px}
+.heroButtons{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;justify-content:center;padding:14px 18px;border-radius:999px;font-weight:800;border:1px solid #000}
+.btn.primary{background:#000;color:#fff}
+.btn.secondary{background:#fff}
+.heroImage img{width:100%;height:100%;object-fit:cover}
+.section{max-width:1180px;margin:70px auto;padding:0 18px}
+.sectionHead{display:flex;align-items:end;justify-content:space-between;gap:20px;margin-bottom:24px}
+.sectionHead h2{font-family:Georgia,serif;font-size:42px;margin:0}
+.sectionHead p{color:var(--muted);margin:0}
+.filters{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:24px}
+.filter{padding:10px 14px;border:1px solid var(--line);border-radius:999px;background:#fff;font-weight:700;cursor:pointer}
+.filter.active{background:#000;color:#fff;border-color:#000}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.card{border:1px solid var(--line);border-radius:18px;overflow:hidden;background:#fff;transition:.2s}
+.card:hover{transform:translateY(-3px);box-shadow:0 12px 30px rgba(0,0,0,.07)}
+.cardImg{aspect-ratio:4/5;background:#eee;overflow:hidden;position:relative}
+.cardImg img{width:100%;height:100%;object-fit:cover;transition:.3s}
+.card:hover .cardImg img{transform:scale(1.025)}
+.badge{position:absolute;left:12px;top:12px;background:#fff;padding:7px 10px;border-radius:999px;font-size:12px;font-weight:800}
+.cardBody{padding:18px}
+.code{font-size:12px;color:#888;letter-spacing:1px}
+.cardTitle{font-weight:800;font-size:18px;margin:7px 0}
+.price{font-weight:900;font-size:22px}
+.meta{font-size:13px;color:#666;margin-top:6px}
+.order{margin-top:14px;width:100%;border:0;background:#17a34a;color:#fff;padding:12px 14px;border-radius:10px;font-weight:900;cursor:pointer}
+.about{display:grid;grid-template-columns:1fr 1fr;gap:30px;background:#0b0b0b;color:#fff;border-radius:24px;padding:42px}
+.about h3{font-family:Georgia,serif;font-size:38px;margin:0 0 12px}
+.about p{color:#ccc;line-height:1.7}
+.pillrow{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+.pill{border:1px solid #333;padding:9px 12px;border-radius:999px;color:#ddd;font-size:13px}
+footer{border-top:1px solid var(--line);margin-top:70px;padding:30px 18px 50px;color:#666}
+.footerInner{max-width:1180px;margin:auto;display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
+.floating{position:fixed;right:18px;bottom:18px;background:#17a34a;color:#fff;padding:14px 18px;border-radius:999px;font-weight:900;box-shadow:0 10px 30px rgba(0,0,0,.2);z-index:50}
+@media(max-width:900px){
+  .navlinks{display:none}.heroCard{grid-template-columns:1fr}.heroCopy{padding:40px 28px}h1{font-size:48px}.heroImage{height:520px}
+  .grid{grid-template-columns:repeat(2,1fr)}.about{grid-template-columns:1fr}
+}
+@media(max-width:620px){
+  .brand img{width:58px;height:48px}.brandname{font-size:14px}
+  .hero{margin-top:14px}.heroCard{border-radius:16px}.heroCopy{padding:34px 22px}h1{font-size:42px}
+  .heroImage{height:440px}.section{margin:48px auto}.sectionHead h2{font-size:34px}
+  .grid{grid-template-columns:1fr}.cta{display:none}
+}
+</style>
+</head>
+<body>
+<div class="topbar">PK CLOTHING • TRENDY • COMFORTABLE • AFFORDABLE</div>
+<header>
+  <div class="nav">
+    <a class="brand" href="#home">
+      <img src="pk-logo.jpg" alt="PK Clothing logo"/>
+      <div class="brandname">PK CLOTHING</div>
+    </a>
+    <nav class="navlinks">
+      <a href="#home">Home</a>
+      <a href="#women">Women</a>
+      <a href="#new">New Arrivals</a>
+      <a href="#contact">Contact</a>
+    </nav>
+    <a class="cta" href="https://wa.me/9779863997137?text=Hi%20PK%20Clothing%2C%20I%20want%20to%20place%20an%20order." target="_blank">Order on WhatsApp</a>
+  </div>
+</header>
+
+<main id="home">
+  <section class="hero">
+    <div class="heroCard">
+      <div class="heroCopy">
+        <div class="kicker">NEW COLLECTION</div>
+        <h1>Style that feels like you.</h1>
+        <p>Discover easy everyday fashion from PK Clothing. Browse the latest kurthis and tops, then order directly through WhatsApp.</p>
+        <div class="heroButtons">
+          <a class="btn primary" href="#women">Shop Women</a>
+          <a class="btn secondary" href="https://wa.me/9779863997137?text=Hi%20PK%20Clothing%2C%20please%20show%20me%20your%20latest%20collection." target="_blank">WhatsApp Us</a>
+        </div>
+      </div>
+      <div class="heroImage"><img src="product_white_pose.jpg" alt="PK Clothing white kurthi"/></div>
+    </div>
+  </section>
+
+  <section class="section" id="women">
+    <div class="sectionHead">
+      <div><div class="kicker">PK CLOTHING</div><h2>Women’s Collection</h2></div>
+      <p>Tap a product to order on WhatsApp.</p>
+    </div>
+    <div class="filters">
+      <button class="filter active">All</button>
+      <button class="filter">Kurthi</button>
+      <button class="filter">White</button>
+      <button class="filter">Floral</button>
+    </div>
+    <div class="grid" id="new">
+      <article class="card">
+        <div class="cardImg"><span class="badge">NEW</span><img src="product_white_front.jpg" alt="White blue embroidered kurthi"/></div>
+        <div class="cardBody">
+          <div class="code">PK003</div>
+          <div class="cardTitle">White Blue Embroidered Kurthi</div>
+          <div class="price">Price on request</div>
+          <div class="meta">White • Blue embroidery • 3/4 sleeve</div>
+          <button class="order" onclick="order('PK003','White Blue Embroidered Kurthi')">ORDER ON WHATSAPP</button>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="cardImg"><span class="badge">NEW</span><img src="product_white_floral.jpg" alt="White floral kurthi"/></div>
+        <div class="cardBody">
+          <div class="code">PK004</div>
+          <div class="cardTitle">White Floral Kurthi</div>
+          <div class="price">Price on request</div>
+          <div class="meta">Soft white base • Floral print • Everyday wear</div>
+          <button class="order" onclick="order('PK004','White Floral Kurthi')">ORDER ON WHATSAPP</button>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="cardImg"><span class="badge">TRENDING</span><img src="product_black_floral.jpg" alt="Black floral kurthi"/></div>
+        <div class="cardBody">
+          <div class="code">PK005</div>
+          <div class="cardTitle">Black Floral Kurthi</div>
+          <div class="price">Price on request</div>
+          <div class="meta">Black • Bold floral print • Statement style</div>
+          <button class="order" onclick="order('PK005','Black Floral Kurthi')">ORDER ON WHATSAPP</button>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="cardImg"><span class="badge">NEW</span><img src="product_pink.jpg" alt="Pink embroidered kurthi"/></div>
+        <div class="cardBody">
+          <div class="code">PK006</div>
+          <div class="cardTitle">Pink Embroidered Kurthi</div>
+          <div class="price">Price on request</div>
+          <div class="meta">Pink • Decorative neckline • 3/4 sleeve</div>
+          <button class="order" onclick="order('PK006','Pink Embroidered Kurthi')">ORDER ON WHATSAPP</button>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="cardImg"><img src="product_white_close.jpg" alt="White blue kurthi closeup"/></div>
+        <div class="cardBody">
+          <div class="code">PK003 DETAIL</div>
+          <div class="cardTitle">Embroidery Detail</div>
+          <div class="price">See PK003</div>
+          <div class="meta">Close-up view of neckline and fabric detail.</div>
+          <button class="order" onclick="order('PK003','White Blue Embroidered Kurthi')">ASK ABOUT PK003</button>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="cardImg"><img src="product_white_back.jpg" alt="White blue kurthi back view"/></div>
+        <div class="cardBody">
+          <div class="code">PK003 BACK</div>
+          <div class="cardTitle">Back View</div>
+          <div class="price">See PK003</div>
+          <div class="meta">Back view for fit and fabric transparency reference.</div>
+          <button class="order" onclick="order('PK003','White Blue Embroidered Kurthi')">ASK ABOUT PK003</button>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="about">
+      <div>
+        <div class="kicker">WHY PK CLOTHING</div>
+        <h3>Simple shopping, direct ordering.</h3>
+        <p>No complicated checkout. Choose what you like, tap WhatsApp, send the product code, and confirm your order directly with PK Clothing.</p>
+      </div>
+      <div>
+        <div class="pillrow">
+          <span class="pill">Women’s Fashion</span>
+          <span class="pill">New Arrivals</span>
+          <span class="pill">Affordable Styles</span>
+          <span class="pill">Direct WhatsApp Ordering</span>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer id="contact">
+  <div class="footerInner">
+    <div><strong>PK CLOTHING</strong><br/>Style for Everyone</div>
+    <div>WhatsApp: +977 9863997137</div>
+  </div>
+</footer>
+
+<a class="floating" href="https://wa.me/9779863997137?text=Hi%20PK%20Clothing%2C%20I%20want%20to%20order." target="_blank">WhatsApp</a>
+
+<script>
+function order(code,name){
+  const msg=`Hi PK Clothing! I want to order ${code} – ${name}. Please tell me the price, available sizes and colors.`;
+  window.open('https://wa.me/9779863997137?text='+encodeURIComponent(msg),'_blank');
+}
+</script>
+</body>
+</html>
