@@ -466,6 +466,136 @@
     }
 
 
+
+    .auth-gate {
+      position: fixed;
+      inset: 0;
+      z-index: 5000;
+      background: #f7f7f5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 22px;
+    }
+
+    .auth-gate.hidden {
+      display: none;
+    }
+
+    .auth-gate-card {
+      width: min(480px, 100%);
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      padding: 28px;
+      box-shadow: 0 24px 70px rgba(0,0,0,.12);
+    }
+
+    .auth-gate-brand {
+      text-align: center;
+      margin-bottom: 22px;
+    }
+
+    .auth-gate-brand img {
+      width: 86px;
+      height: 74px;
+      object-fit: cover;
+      margin: 0 auto 12px;
+      border-radius: 10px;
+      background: #000;
+    }
+
+    .auth-gate-brand h1 {
+      font-size: 34px;
+      margin: 0 0 8px;
+    }
+
+    .auth-gate-brand p {
+      margin: 0;
+      color: #666;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .gate-tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin: 20px 0 16px;
+    }
+
+    .gate-tab {
+      border: 1px solid #111;
+      background: #fff;
+      color: #111;
+      border-radius: 12px;
+      padding: 12px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .gate-tab.active {
+      background: #111;
+      color: #fff;
+    }
+
+    .gate-input {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 14px;
+      font: inherit;
+      margin-bottom: 10px;
+    }
+
+    .gate-primary {
+      width: 100%;
+      border: 0;
+      border-radius: 12px;
+      background: #000;
+      color: #fff;
+      padding: 14px 16px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .gate-message {
+      min-height: 20px;
+      margin-top: 12px;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .gate-message.error { color: #b42318; }
+    .gate-message.success { color: #15803d; }
+
+    .verify-panel {
+      display: none;
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid var(--line);
+    }
+
+    .verify-panel.show {
+      display: block;
+    }
+
+    .verify-title {
+      font-weight: 900;
+      margin-bottom: 7px;
+    }
+
+    .verify-help {
+      color: #666;
+      font-size: 13px;
+      line-height: 1.5;
+      margin-bottom: 10px;
+    }
+
+    body.auth-locked > *:not(.auth-gate) {
+      visibility: hidden;
+    }
+
     .auth-tabs {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -2034,7 +2164,38 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 
-<body>
+<body class="auth-locked">
+
+<div class="auth-gate" id="authGate">
+  <div class="auth-gate-card">
+    <div class="auth-gate-brand">
+      <img src="pk-logo.jpg" alt="PK Clothing logo">
+      <h1>PK Clothing</h1>
+      <p>Create an account or log in to continue shopping.</p>
+    </div>
+
+    <div class="gate-tabs">
+      <button id="gateLoginTab" class="gate-tab active" type="button" onclick="setGateMode('login')">LOG IN</button>
+      <button id="gateSignupTab" class="gate-tab" type="button" onclick="setGateMode('signup')">SIGN UP</button>
+    </div>
+
+    <input id="gateEmail" class="gate-input" type="email" placeholder="Email address" autocomplete="email">
+    <input id="gatePassword" class="gate-input" type="password" placeholder="Password" minlength="6" autocomplete="current-password">
+
+    <button id="gateSubmitBtn" class="gate-primary" type="button" onclick="submitGateAuth()">LOG IN</button>
+    <div id="gateMessage" class="gate-message"></div>
+
+    <div id="verifyPanel" class="verify-panel">
+      <div class="verify-title">Enter verification code</div>
+      <div class="verify-help">
+        We sent a verification code to your email. Enter it below to verify your account.
+      </div>
+      <input id="gateOtp" class="gate-input" type="text" inputmode="numeric" placeholder="Verification code" maxlength="8">
+      <button class="gate-primary" type="button" onclick="verifySignupCode()">VERIFY EMAIL</button>
+    </div>
+  </div>
+</div>
+
 
 <div class="topbar">
   PK CLOTHING • MEN'S & WOMEN'S FASHION • NEPAL
@@ -3194,6 +3355,175 @@ function openSignIn() {
   document.getElementById('accountModal').setAttribute('aria-hidden','false');
   showRewardLogin();
 }
+
+
+// ===== Full-site authentication gate =====
+let gateMode = 'login';
+let pendingSignupEmail = '';
+
+function setGateMode(mode) {
+  gateMode = mode;
+
+  document.getElementById('gateLoginTab')?.classList.toggle('active', mode === 'login');
+  document.getElementById('gateSignupTab')?.classList.toggle('active', mode === 'signup');
+
+  const button = document.getElementById('gateSubmitBtn');
+  if (button) button.textContent = mode === 'login' ? 'LOG IN' : 'CREATE ACCOUNT';
+
+  const msg = document.getElementById('gateMessage');
+  if (msg) {
+    msg.textContent = '';
+    msg.className = 'gate-message';
+  }
+
+  document.getElementById('verifyPanel')?.classList.remove('show');
+}
+
+async function submitGateAuth() {
+  const email = (document.getElementById('gateEmail')?.value || '').trim();
+  const password = document.getElementById('gatePassword')?.value || '';
+  const msg = document.getElementById('gateMessage');
+
+  if (!email || !password) {
+    msg.textContent = 'Enter your email and password.';
+    msg.className = 'gate-message error';
+    return;
+  }
+
+  if (password.length < 6) {
+    msg.textContent = 'Password must be at least 6 characters.';
+    msg.className = 'gate-message error';
+    return;
+  }
+
+  if (gateMode === 'signup') {
+    msg.textContent = 'Creating your account…';
+    msg.className = 'gate-message';
+
+    const { data, error } = await pkSupabase.auth.signUp({
+      email,
+      password
+    });
+
+    if (error) {
+      msg.textContent = error.message;
+      msg.className = 'gate-message error';
+      return;
+    }
+
+    pendingSignupEmail = email;
+
+    // If email confirmation is disabled and Supabase creates a session immediately,
+    // sign out so the customer still follows the verify-then-login flow.
+    if (data.session) {
+      await pkSupabase.auth.signOut();
+    }
+
+    msg.textContent = 'Account created. Check your email for the verification code.';
+    msg.className = 'gate-message success';
+    document.getElementById('verifyPanel')?.classList.add('show');
+    return;
+  }
+
+  msg.textContent = 'Logging in…';
+  msg.className = 'gate-message';
+
+  const { data, error } = await pkSupabase.auth.signInWithPassword({
+    email,
+    password
+  });
+
+  if (error) {
+    msg.textContent = error.message;
+    msg.className = 'gate-message error';
+    return;
+  }
+
+  if (data.session?.user) {
+    unlockWebsite(data.session.user);
+  }
+}
+
+async function verifySignupCode() {
+  const email = pendingSignupEmail || (document.getElementById('gateEmail')?.value || '').trim();
+  const token = (document.getElementById('gateOtp')?.value || '').trim();
+  const msg = document.getElementById('gateMessage');
+
+  if (!email || !token) {
+    msg.textContent = 'Enter the verification code from your email.';
+    msg.className = 'gate-message error';
+    return;
+  }
+
+  msg.textContent = 'Verifying email…';
+  msg.className = 'gate-message';
+
+  const { error } = await pkSupabase.auth.verifyOtp({
+    email,
+    token,
+    type: 'email'
+  });
+
+  if (error) {
+    msg.textContent = error.message;
+    msg.className = 'gate-message error';
+    return;
+  }
+
+  // Requirement: verification first, then customer logs in normally.
+  await pkSupabase.auth.signOut();
+
+  msg.textContent = 'Email verified successfully. Now log in with your email and password.';
+  msg.className = 'gate-message success';
+  document.getElementById('verifyPanel')?.classList.remove('show');
+  setGateMode('login');
+  document.getElementById('gateEmail').value = email;
+  document.getElementById('gatePassword').value = '';
+}
+
+function unlockWebsite(user) {
+  currentSupabaseUser = user || null;
+  document.body.classList.remove('auth-locked');
+  document.getElementById('authGate')?.classList.add('hidden');
+}
+
+function lockWebsite() {
+  document.body.classList.add('auth-locked');
+  document.getElementById('authGate')?.classList.remove('hidden');
+  setGateMode('login');
+}
+
+async function initializeAuthGate() {
+  const { data } = await pkSupabase.auth.getSession();
+
+  if (data.session?.user) {
+    unlockWebsite(data.session.user);
+  } else {
+    lockWebsite();
+  }
+}
+
+// Replace logout behavior so logging out hides the store again.
+async function logoutSupabaseAccount() {
+  await pkSupabase.auth.signOut();
+  currentSupabaseUser = null;
+  closeAccount();
+  lockWebsite();
+}
+
+pkSupabase.auth.onAuthStateChange((event, session) => {
+  currentSupabaseUser = session?.user || null;
+
+  if (event === 'SIGNED_OUT') {
+    lockWebsite();
+  }
+
+  if (event === 'SIGNED_IN' && session?.user) {
+    unlockWebsite(session.user);
+  }
+});
+
+initializeAuthGate();
 
 </script>
 
