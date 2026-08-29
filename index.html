@@ -2098,6 +2098,80 @@
       }
     }
 
+
+    .navlinks {
+      align-items: center;
+      flex-wrap: nowrap;
+    }
+
+    .nav-dropdown {
+      position: relative;
+    }
+
+    .nav-dropdown > button {
+      border: 0;
+      background: transparent;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+      padding: 0;
+      color: inherit;
+    }
+
+    .dropdown-menu {
+      position: absolute;
+      top: calc(100% + 14px);
+      left: 0;
+      min-width: 250px;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      box-shadow: 0 18px 45px rgba(0,0,0,.12);
+      padding: 10px;
+      display: none;
+      z-index: 300;
+    }
+
+    .nav-dropdown:hover .dropdown-menu,
+    .nav-dropdown:focus-within .dropdown-menu,
+    .nav-dropdown.open .dropdown-menu {
+      display: block;
+    }
+
+    .dropdown-group {
+      padding: 8px;
+    }
+
+    .dropdown-heading {
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 1px;
+      color: #888;
+      margin-bottom: 7px;
+    }
+
+    .dropdown-menu a {
+      display: block;
+      padding: 10px 11px;
+      border-radius: 9px;
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .dropdown-menu a:hover {
+      background: var(--soft);
+    }
+
+    .dropdown-divider {
+      height: 1px;
+      background: var(--line);
+      margin: 5px 8px;
+    }
+
+    .category-anchor {
+      scroll-margin-top: 130px;
+    }
+
     @media(max-width: 1000px) {
       .product-grid {
         grid-template-columns: repeat(2, 1fr);
@@ -2227,8 +2301,28 @@
 
     <nav class="navlinks">
       <a href="#home">Home</a>
-      <a href="#women">Women</a>
-      <a href="#men">Men</a>
+
+      <div class="nav-dropdown" id="shopDropdown">
+        <button type="button" onclick="toggleShopMenu(event)">Shop ▾</button>
+
+        <div class="dropdown-menu">
+          <div class="dropdown-group">
+            <div class="dropdown-heading">WOMEN</div>
+            <a href="#tops">Tops</a>
+            <a href="#three-piece">3-Pcs Kurta Sets</a>
+            <a href="#sarees">Sarees</a>
+          </div>
+
+          <div class="dropdown-divider"></div>
+
+          <div class="dropdown-group">
+            <div class="dropdown-heading">MEN</div>
+            <a href="#men">T-Shirts</a>
+            <a href="#men">Shirts</a>
+          </div>
+        </div>
+      </div>
+
       <a href="#new-arrivals">New Arrivals</a>
       <a href="#reviews">Reviews</a>
       <a href="#about">About</a>
@@ -2294,6 +2388,51 @@
       <img src="product_white_pose.jpg" alt="PK Clothing Nepal white embroidered kurti">
     </div>
 
+  </div>
+</section>
+
+
+<section class="section" id="shop-categories">
+  <div class="section-head">
+    <div>
+      <div class="eyebrow">Shop by Category</div>
+      <h2>Find Your Style</h2>
+    </div>
+    <p>Choose a category to browse PK Clothing.</p>
+  </div>
+
+  <div class="product-grid">
+    <a class="product-card category-anchor" id="tops" href="#women">
+      <div class="product-body">
+        <div class="code">WOMEN</div>
+        <div class="product-title">Tops</div>
+        <div class="meta">Short kurtis, casual tops and everyday styles.</div>
+      </div>
+    </a>
+
+    <a class="product-card category-anchor" id="three-piece" href="#women">
+      <div class="product-body">
+        <div class="code">WOMEN</div>
+        <div class="product-title">3-Pcs Kurta Sets</div>
+        <div class="meta">Complete coordinated kurta sets for festive and everyday wear.</div>
+      </div>
+    </a>
+
+    <a class="product-card category-anchor" id="sarees" href="#women">
+      <div class="product-body">
+        <div class="code">WOMEN</div>
+        <div class="product-title">Sarees</div>
+        <div class="meta">Traditional, elegant and premium saree collection.</div>
+      </div>
+    </a>
+
+    <a class="product-card category-anchor" href="#men">
+      <div class="product-body">
+        <div class="code">MEN</div>
+        <div class="product-title">Men's Collection</div>
+        <div class="meta">T-Shirts, shirts and upcoming men's styles.</div>
+      </div>
+    </a>
   </div>
 </section>
 
@@ -3606,6 +3745,19 @@ pkSupabase.auth.onAuthStateChange((event, session) => {
 initializeAuthGate();
 
 
+
+
+function toggleShopMenu(event) {
+  event.stopPropagation();
+  document.getElementById('shopDropdown')?.classList.toggle('open');
+}
+
+document.addEventListener('click', function(event) {
+  const dropdown = document.getElementById('shopDropdown');
+  if (dropdown && !dropdown.contains(event.target)) {
+    dropdown.classList.remove('open');
+  }
+});
 
 </script>
 
