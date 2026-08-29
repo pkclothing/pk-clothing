@@ -2927,25 +2927,85 @@
     }
 
 
-/* ===== PK Clothing Checkout + Orders ===== */
-.checkout-modal{display:none;position:fixed;inset:0;z-index:8000;background:rgba(0,0,0,.62);padding:18px;overflow-y:auto}
-.checkout-modal.open{display:flex;align-items:flex-start;justify-content:center}
-.checkout-card{width:min(720px,100%);background:#fff;border-radius:22px;padding:28px;margin:28px auto;position:relative;box-shadow:0 24px 70px rgba(0,0,0,.22)}
-.checkout-close{position:absolute;right:16px;top:12px;border:0;background:transparent;font-size:30px;cursor:pointer}
-.checkout-card h3{margin:0 0 6px;font-size:30px}.checkout-help{margin:0 0 20px;color:#777;font-size:13px}
-.checkout-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.checkout-field{margin-bottom:12px}.checkout-field.full{grid-column:1/-1}
+/* ===== Checkout + My Orders + Orders Admin ===== */
+.checkout-modal,.admin-orders-modal{
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,.62);
+  padding:18px;overflow-y:auto
+}
+.checkout-modal{z-index:8100}.admin-orders-modal{z-index:8200}
+.checkout-modal.open,.admin-orders-modal.open{display:flex;align-items:flex-start;justify-content:center}
+.checkout-card,.admin-orders-card{
+  width:min(760px,100%);background:#fff;border-radius:22px;padding:28px;
+  margin:28px auto;position:relative;box-shadow:0 24px 70px rgba(0,0,0,.22)
+}
+.admin-orders-card{width:min(1020px,100%)}
+.checkout-close,.admin-orders-close{
+  position:absolute;right:16px;top:12px;border:0;background:transparent;
+  font-size:30px;cursor:pointer
+}
+.checkout-card h3,.admin-orders-card h3{margin:0 0 6px;font-size:30px}
+.checkout-help,.admin-orders-help{margin:0 0 20px;color:#777;font-size:13px}
+.checkout-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.checkout-field{margin-bottom:12px}.checkout-field.full{grid-column:1/-1}
 .checkout-field label{display:block;font-size:12px;font-weight:900;margin-bottom:6px}
-.checkout-field input,.checkout-field textarea{width:100%;border:1px solid #ddd;border-radius:11px;padding:12px 13px;font:inherit;background:#fff;box-sizing:border-box}
+.checkout-field input,.checkout-field textarea{
+  width:100%;border:1px solid #ddd;border-radius:11px;padding:12px 13px;
+  font:inherit;background:#fff;box-sizing:border-box
+}
 .checkout-field textarea{min-height:90px;resize:vertical}
-.checkout-order-summary,.checkout-payment{border:1px solid #e5e5e5;border-radius:14px;padding:14px;margin:8px 0 15px;background:#fafafa}
+.checkout-order-summary,.checkout-payment{
+  border:1px solid #e5e5e5;border-radius:14px;padding:14px;margin:8px 0 15px;background:#fafafa
+}
 .checkout-summary-row{display:flex;justify-content:space-between;gap:12px;padding:6px 0;font-size:13px}
-.checkout-summary-total{display:flex;justify-content:space-between;gap:12px;border-top:1px solid #ddd;margin-top:7px;padding-top:12px;font-size:18px;font-weight:900}
-.checkout-payment strong{display:block;margin-bottom:7px}.checkout-payment-note{font-size:12px;color:#666;line-height:1.5}
-.checkout-place{width:100%;border:0;border-radius:11px;background:#111;color:#fff;padding:14px 16px;font-weight:900;cursor:pointer}
-.checkout-place:disabled{opacity:.55;cursor:not-allowed}.checkout-message{min-height:20px;margin-top:10px;font-size:13px}
+.checkout-summary-total{
+  display:flex;justify-content:space-between;gap:12px;border-top:1px solid #ddd;
+  margin-top:7px;padding-top:12px;font-size:18px;font-weight:900
+}
+.checkout-payment strong{display:block;margin-bottom:7px}
+.checkout-payment-note{font-size:12px;color:#666;line-height:1.5}
+.checkout-place{
+  width:100%;border:0;border-radius:11px;background:#111;color:#fff;
+  padding:14px 16px;font-weight:900;cursor:pointer
+}
+.checkout-place:disabled{opacity:.55;cursor:not-allowed}
+.checkout-message{min-height:20px;margin-top:10px;font-size:13px}
 .checkout-message.error{color:#b42318}.checkout-message.success{color:#15803d}
-.order-success{text-align:center;padding:16px 0 4px}.order-success-code{font-size:28px;font-weight:900;margin:9px 0}
-@media(max-width:650px){.checkout-grid{grid-template-columns:1fr}.checkout-field.full{grid-column:auto}.checkout-card{padding:24px 18px;margin:10px auto}}
+.order-success{text-align:center;padding:16px 0 4px}
+.order-success-code{font-size:28px;font-weight:900;margin:9px 0}
+
+.orders-section{
+  border:1px solid var(--line);border-radius:16px;padding:18px;margin-bottom:16px;background:#fff
+}
+.orders-section h4{margin:0 0 12px;font-size:19px}
+.order-item{border-top:1px solid var(--line);padding:13px 0}
+.order-item:first-child{border-top:0}
+.order-item-top{display:flex;justify-content:space-between;gap:10px;align-items:center}
+.order-id{font-weight:900}
+.order-status{
+  display:inline-flex;padding:6px 9px;border-radius:999px;background:#f7f7f5;
+  font-size:11px;font-weight:900;text-transform:uppercase
+}
+.order-meta{color:#777;font-size:12px;margin-top:5px;line-height:1.55}
+
+.admin-orders-stats{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:16px 0
+}
+.admin-orders-stat{border:1px solid var(--line);border-radius:14px;padding:15px}
+.admin-orders-stat small{display:block;color:#777;margin-bottom:4px}
+.admin-orders-stat strong{font-size:23px}
+.admin-order-row{border-top:1px solid var(--line);padding:14px 0}
+.admin-order-head{display:flex;justify-content:space-between;gap:12px;align-items:center}
+.admin-order-actions{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
+.admin-order-actions button{
+  border:1px solid #111;background:#fff;border-radius:8px;padding:7px 9px;
+  font-weight:800;cursor:pointer
+}
+.admin-order-actions button.active{background:#111;color:#fff}
+@media(max-width:720px){
+  .checkout-grid{grid-template-columns:1fr}.checkout-field.full{grid-column:auto}
+  .admin-orders-stats{grid-template-columns:1fr 1fr}
+  .checkout-card,.admin-orders-card{padding:24px 18px;margin:10px auto}
+}
 
 </style>
 
@@ -2965,6 +3025,96 @@
 </head>
 
 <body class="auth-locked">
+
+<div class="admin-orders-modal" id="adminOrdersModal" aria-hidden="true">
+  <div class="admin-orders-card">
+    <button class="admin-orders-close" type="button" onclick="closeAdminOrders()">×</button>
+    <h3>PK Clothing Orders</h3>
+    <p class="admin-orders-help">Private order dashboard for PK Clothing.</p>
+
+    <div class="admin-orders-stats">
+      <div class="admin-orders-stat"><small>Total Orders</small><strong id="adminOrdersTotal">0</strong></div>
+      <div class="admin-orders-stat"><small>Pending</small><strong id="adminOrdersPending">0</strong></div>
+      <div class="admin-orders-stat"><small>Confirmed</small><strong id="adminOrdersConfirmed">0</strong></div>
+      <div class="admin-orders-stat"><small>Delivered</small><strong id="adminOrdersDelivered">0</strong></div>
+    </div>
+
+    <button class="visitor-refresh" type="button" onclick="loadAdminOrders()">REFRESH</button>
+    <div id="adminOrdersList">
+      <div class="wishlist-empty">No orders yet.</div>
+    </div>
+  </div>
+</div>
+
+
+<div class="checkout-modal" id="checkoutModal" aria-hidden="true">
+  <div class="checkout-card">
+    <button class="checkout-close" type="button" onclick="closeCheckoutForm()">×</button>
+
+    <div id="checkoutFormView">
+      <h3>Checkout</h3>
+      <p class="checkout-help">Enter your delivery information to place your PK Clothing order.</p>
+
+      <div class="checkout-grid">
+        <div class="checkout-field">
+          <label for="checkoutName">Full Name</label>
+          <input id="checkoutName" type="text" autocomplete="name" placeholder="Full name">
+        </div>
+        <div class="checkout-field">
+          <label for="checkoutPhone">Phone Number</label>
+          <input id="checkoutPhone" type="tel" autocomplete="tel" placeholder="98XXXXXXXX">
+        </div>
+        <div class="checkout-field">
+          <label for="checkoutProvince">Province</label>
+          <input id="checkoutProvince" type="text" placeholder="Province">
+        </div>
+        <div class="checkout-field">
+          <label for="checkoutDistrict">District / City</label>
+          <input id="checkoutDistrict" type="text" placeholder="District or city">
+        </div>
+        <div class="checkout-field full">
+          <label for="checkoutAddress">Full Delivery Address</label>
+          <textarea id="checkoutAddress" autocomplete="street-address" placeholder="Area, street, landmark and delivery details"></textarea>
+        </div>
+        <div class="checkout-field full">
+          <label for="checkoutNote">Order Note (optional)</label>
+          <textarea id="checkoutNote" placeholder="Any special request?"></textarea>
+        </div>
+      </div>
+
+      <div class="checkout-order-summary">
+        <strong>Order Summary</strong>
+        <div id="checkoutOrderSummary"></div>
+        <div class="checkout-summary-total">
+          <span>Total</span>
+          <span id="checkoutOrderTotal">Rs. 0</span>
+        </div>
+      </div>
+
+      <div class="checkout-payment">
+        <strong>Payment Method: eSewa</strong>
+        <div class="checkout-payment-note">
+          Cash on Delivery is not enabled. Payment verification will be connected later.
+          For now the order is saved as unpaid/pending.
+        </div>
+      </div>
+
+      <button class="checkout-place" id="placeOrderButton" type="button" onclick="placeOrder()">
+        PLACE ORDER
+      </button>
+      <div class="checkout-message" id="checkoutMessage"></div>
+    </div>
+
+    <div id="checkoutSuccessView" class="order-success" style="display:none">
+      <h3>Order Placed ✓</h3>
+      <p>Your PK Clothing order number is:</p>
+      <div class="order-success-code" id="checkoutSuccessCode"></div>
+      <p>Your order is saved and can be viewed inside My Account → My Orders.</p>
+      <button class="checkout-place" type="button" onclick="closeCheckoutForm()">CONTINUE SHOPPING</button>
+    </div>
+  </div>
+</div>
+
 
 <div class="search-overlay" id="productSearchOverlay" aria-hidden="true">
   <div class="search-panel">
@@ -3078,6 +3228,9 @@
 
       <button class="admin-button" id="pkAdminButton" type="button" onclick="openVisitorAdmin()">
         📊 Admin
+      </button>
+      <button class="admin-button" id="pkOrdersAdminButton" type="button" onclick="openAdminOrders()">
+        📦 Orders
       </button>
       <button class="header-icon-btn" type="button" onclick="openProductSearch()" aria-label="Search" title="Search">
         🔍
@@ -3657,6 +3810,14 @@
       </div>
 
       
+      
+      <div class="orders-section">
+        <h4>My Orders</h4>
+        <div id="myOrdersList">
+          <div class="wishlist-empty">You have not placed any orders yet.</div>
+        </div>
+      </div>
+
       <div class="wishlist-account-section">
         <h4>♡ My Wishlist</h4>
         <div id="accountWishlist">
@@ -3745,41 +3906,6 @@
     </button>
   </div>
 </aside>
-
-
-<div class="checkout-modal" id="checkoutModal" aria-hidden="true">
-  <div class="checkout-card">
-    <button class="checkout-close" type="button" onclick="closeCheckoutForm()">×</button>
-    <div id="checkoutFormView">
-      <h3>Checkout</h3>
-      <p class="checkout-help">Enter your delivery information to place your PK Clothing order.</p>
-      <div class="checkout-grid">
-        <div class="checkout-field"><label for="checkoutName">Full Name</label><input id="checkoutName" type="text" autocomplete="name" placeholder="Full name"></div>
-        <div class="checkout-field"><label for="checkoutPhone">Phone Number</label><input id="checkoutPhone" type="tel" autocomplete="tel" placeholder="98XXXXXXXX"></div>
-        <div class="checkout-field"><label for="checkoutProvince">Province</label><input id="checkoutProvince" type="text" placeholder="Province"></div>
-        <div class="checkout-field"><label for="checkoutDistrict">District / City</label><input id="checkoutDistrict" type="text" placeholder="District or city"></div>
-        <div class="checkout-field full"><label for="checkoutAddress">Full Delivery Address</label><textarea id="checkoutAddress" autocomplete="street-address" placeholder="Area, street, landmark and delivery details"></textarea></div>
-        <div class="checkout-field full"><label for="checkoutNote">Order Note (optional)</label><textarea id="checkoutNote" placeholder="Any special request?"></textarea></div>
-      </div>
-      <div class="checkout-order-summary">
-        <strong>Order Summary</strong><div id="checkoutOrderSummary"></div>
-        <div class="checkout-summary-total"><span>Total</span><span id="checkoutOrderTotal">Rs. 0</span></div>
-      </div>
-      <div class="checkout-payment">
-        <strong>Payment Method: eSewa</strong>
-        <div class="checkout-payment-note">Your order will be recorded first. PK Clothing can confirm the eSewa payment details before dispatch. Cash on Delivery is not enabled.</div>
-      </div>
-      <button class="checkout-place" id="placeOrderButton" type="button" onclick="placeOrder()">PLACE ORDER</button>
-      <div class="checkout-message" id="checkoutMessage"></div>
-    </div>
-    <div id="checkoutSuccessView" class="order-success" style="display:none">
-      <h3>Order Placed ✓</h3><p>Your PK Clothing order number is:</p>
-      <div class="order-success-code" id="checkoutSuccessCode"></div>
-      <p>Your order has been saved. PK Clothing can now see it in Supabase.</p>
-      <button class="checkout-place" type="button" onclick="closeCheckoutForm()">CONTINUE SHOPPING</button>
-    </div>
-  </div>
-</div>
 
 <div class="cart-toast" id="cartToast">Added to cart</div>
 
@@ -4441,90 +4567,7 @@ function closeCart() {
   document.getElementById('cartOverlay')?.classList.remove('open');
 }
 
-function createPkOrderCode() {
-  return `PK${Date.now().toString().slice(-8)}${Math.floor(10 + Math.random() * 90)}`;
-}
-function setCheckoutMessage(message, type = '') {
-  const el = document.getElementById('checkoutMessage');
-  if (!el) return;
-  el.textContent = message || '';
-  el.className = 'checkout-message' + (type ? ' ' + type : '');
-}
-async function openCheckoutForm() {
-  const cart = getCart();
-  if (!cart.length) return alert('Your cart is empty.');
-  const { data } = await pkSupabase.auth.getUser();
-  const user = data?.user;
-  if (!user) return alert('Please log in before checkout.');
-  closeCart();
-  document.getElementById('checkoutName').value = user.user_metadata?.full_name || user.user_metadata?.name || '';
-  document.getElementById('checkoutFormView').style.display = 'block';
-  document.getElementById('checkoutSuccessView').style.display = 'none';
-  setCheckoutMessage('');
-  const total = cart.reduce((sum,item) => sum + Number(item.price)*Number(item.qty), 0);
-  document.getElementById('checkoutOrderSummary').innerHTML = cart.map(item => `
-    <div class="checkout-summary-row">
-      <span>${escapeHtml(item.name)}${item.size ? ' • Size ' + escapeHtml(item.size) : ''} × ${item.qty}</span>
-      <strong>Rs. ${(Number(item.price)*Number(item.qty)).toLocaleString()}</strong>
-    </div>`).join('');
-  document.getElementById('checkoutOrderTotal').textContent = `Rs. ${total.toLocaleString()}`;
-  const modal = document.getElementById('checkoutModal');
-  modal.classList.add('open'); modal.setAttribute('aria-hidden','false');
-}
-function closeCheckoutForm() {
-  const modal = document.getElementById('checkoutModal');
-  modal?.classList.remove('open'); modal?.setAttribute('aria-hidden','true');
-}
-async function placeOrder() {
-  const cart = getCart();
-  if (!cart.length) return setCheckoutMessage('Your cart is empty.','error');
-  const { data } = await pkSupabase.auth.getUser();
-  const user = data?.user;
-  if (!user) return setCheckoutMessage('Please log in again before placing the order.','error');
 
-  const customerName = document.getElementById('checkoutName').value.trim();
-  const phone = document.getElementById('checkoutPhone').value.trim();
-  const province = document.getElementById('checkoutProvince').value.trim();
-  const district = document.getElementById('checkoutDistrict').value.trim();
-  const address = document.getElementById('checkoutAddress').value.trim();
-  const note = document.getElementById('checkoutNote').value.trim();
-
-  if (!customerName || !phone || !district || !address)
-    return setCheckoutMessage('Please enter your name, phone, district/city and full delivery address.','error');
-  if (!/^[0-9+\-\s]{7,20}$/.test(phone))
-    return setCheckoutMessage('Please enter a valid phone number.','error');
-
-  const subtotal = cart.reduce((sum,item) => sum + Number(item.price)*Number(item.qty), 0);
-  const orderCode = createPkOrderCode();
-  const items = cart.map(item => ({
-    code:item.code,name:item.name,size:item.size || null,qty:Number(item.qty),
-    unit_price:Number(item.price),line_total:Number(item.price)*Number(item.qty)
-  }));
-
-  const button = document.getElementById('placeOrderButton');
-  button.disabled = true; button.textContent = 'PLACING ORDER...';
-  setCheckoutMessage('Saving your order...');
-
-  const { data:savedOrder, error } = await pkSupabase.from('orders').insert({
-    order_code:orderCode,user_id:user.id,customer_email:user.email,
-    customer_name:customerName,phone,province:province || null,district,address,
-    note:note || null,items,subtotal,reward_points:Math.round(subtotal*.05),
-    payment_status:'unpaid',order_status:'pending'
-  }).select('order_code').single();
-
-  button.disabled = false; button.textContent = 'PLACE ORDER';
-  if (error) {
-    console.error(error);
-    return setCheckoutMessage('Could not place the order: ' + error.message,'error');
-  }
-  saveCart([]);
-  document.getElementById('checkoutFormView').style.display = 'none';
-  document.getElementById('checkoutSuccessCode').textContent = savedOrder?.order_code || orderCode;
-  document.getElementById('checkoutSuccessView').style.display = 'block';
-}
-document.getElementById('checkoutModal')?.addEventListener('click', e => {
-  if (e.target.id === 'checkoutModal') closeCheckoutForm();
-});
 
 function showCartToast(message) {
   const toast = document.getElementById('cartToast');
@@ -5313,6 +5356,314 @@ setTimeout(() => {
   renderWishlistHearts();
   renderAccountWishlist();
 }, 0);
+
+
+// ===== Checkout + Orders =====
+const PK_ORDER_ADMIN_EMAIL = 'pkclothing414@gmail.com';
+
+function createPkOrderCode() {
+  return `PK${Date.now().toString().slice(-8)}${Math.floor(10 + Math.random() * 90)}`;
+}
+
+function setCheckoutMessage(message, type = '') {
+  const el = document.getElementById('checkoutMessage');
+  if (!el) return;
+  el.textContent = message || '';
+  el.className = 'checkout-message' + (type ? ' ' + type : '');
+}
+
+async function openCheckoutForm() {
+  const cart = getCart();
+  if (!cart.length) return alert('Your cart is empty.');
+
+  const { data } = await pkSupabase.auth.getUser();
+  const user = data?.user;
+  if (!user) return alert('Please log in before checkout.');
+
+  closeCart();
+
+  document.getElementById('checkoutName').value =
+    user.user_metadata?.full_name || user.user_metadata?.name || '';
+
+  document.getElementById('checkoutFormView').style.display = 'block';
+  document.getElementById('checkoutSuccessView').style.display = 'none';
+  setCheckoutMessage('');
+
+  const total = cart.reduce((sum,item) => sum + Number(item.price) * Number(item.qty), 0);
+
+  document.getElementById('checkoutOrderSummary').innerHTML = cart.map(item => `
+    <div class="checkout-summary-row">
+      <span>${escapeHtml(item.name)}${item.size ? ' • Size ' + escapeHtml(item.size) : ''} × ${item.qty}</span>
+      <strong>Rs. ${(Number(item.price) * Number(item.qty)).toLocaleString()}</strong>
+    </div>
+  `).join('');
+
+  document.getElementById('checkoutOrderTotal').textContent = `Rs. ${total.toLocaleString()}`;
+
+  const modal = document.getElementById('checkoutModal');
+  modal.classList.add('open');
+  modal.setAttribute('aria-hidden','false');
+}
+
+function closeCheckoutForm() {
+  const modal = document.getElementById('checkoutModal');
+  modal?.classList.remove('open');
+  modal?.setAttribute('aria-hidden','true');
+}
+
+async function placeOrder() {
+  const cart = getCart();
+  if (!cart.length) return setCheckoutMessage('Your cart is empty.','error');
+
+  const { data } = await pkSupabase.auth.getUser();
+  const user = data?.user;
+  if (!user) return setCheckoutMessage('Please log in again before placing the order.','error');
+
+  const customerName = document.getElementById('checkoutName').value.trim();
+  const phone = document.getElementById('checkoutPhone').value.trim();
+  const province = document.getElementById('checkoutProvince').value.trim();
+  const district = document.getElementById('checkoutDistrict').value.trim();
+  const address = document.getElementById('checkoutAddress').value.trim();
+  const note = document.getElementById('checkoutNote').value.trim();
+
+  if (!customerName || !phone || !district || !address) {
+    return setCheckoutMessage(
+      'Please enter your name, phone, district/city and full delivery address.',
+      'error'
+    );
+  }
+
+  if (!/^[0-9+\-\s]{7,20}$/.test(phone)) {
+    return setCheckoutMessage('Please enter a valid phone number.','error');
+  }
+
+  const subtotal = cart.reduce((sum,item) => sum + Number(item.price) * Number(item.qty), 0);
+  const orderCode = createPkOrderCode();
+
+  const items = cart.map(item => ({
+    code: item.code,
+    name: item.name,
+    size: item.size || null,
+    qty: Number(item.qty),
+    unit_price: Number(item.price),
+    line_total: Number(item.price) * Number(item.qty)
+  }));
+
+  const button = document.getElementById('placeOrderButton');
+  button.disabled = true;
+  button.textContent = 'PLACING ORDER...';
+  setCheckoutMessage('Saving your order...');
+
+  const { data:savedOrder, error } = await pkSupabase.from('orders').insert({
+    order_code: orderCode,
+    user_id: user.id,
+    customer_email: user.email,
+    customer_name: customerName,
+    phone,
+    province: province || null,
+    district,
+    address,
+    note: note || null,
+    items,
+    subtotal,
+    reward_points: Math.round(subtotal * 0.05),
+    payment_status: 'unpaid',
+    order_status: 'pending'
+  }).select('order_code').single();
+
+  button.disabled = false;
+  button.textContent = 'PLACE ORDER';
+
+  if (error) {
+    console.error(error);
+    return setCheckoutMessage('Could not place the order: ' + error.message,'error');
+  }
+
+  saveCart([]);
+
+  document.getElementById('checkoutFormView').style.display = 'none';
+  document.getElementById('checkoutSuccessCode').textContent =
+    savedOrder?.order_code || orderCode;
+  document.getElementById('checkoutSuccessView').style.display = 'block';
+
+  await loadMyOrders();
+}
+
+async function loadMyOrders() {
+  const box = document.getElementById('myOrdersList');
+  if (!box) return;
+
+  const { data:userData } = await pkSupabase.auth.getUser();
+  const user = userData?.user;
+  if (!user) return;
+
+  const { data:orders, error } = await pkSupabase
+    .from('orders')
+    .select('order_code,items,subtotal,payment_status,order_status,created_at')
+    .eq('user_id', user.id)
+    .order('created_at', { ascending:false });
+
+  if (error) {
+    box.innerHTML = `<div class="wishlist-empty">${escapeHtml(error.message)}</div>`;
+    return;
+  }
+
+  if (!orders?.length) {
+    box.innerHTML = '<div class="wishlist-empty">You have not placed any orders yet.</div>';
+    return;
+  }
+
+  box.innerHTML = orders.map(order => {
+    const count = (order.items || []).reduce((sum,item) => sum + Number(item.qty || 0),0);
+    return `
+      <div class="order-item">
+        <div class="order-item-top">
+          <span class="order-id">${escapeHtml(order.order_code)}</span>
+          <span class="order-status">${escapeHtml(order.order_status)}</span>
+        </div>
+        <div class="order-meta">
+          ${count} item${count === 1 ? '' : 's'} • Rs. ${Number(order.subtotal).toLocaleString()}
+          <br>Payment: ${escapeHtml(order.payment_status)} • ${new Date(order.created_at).toLocaleString()}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function isOrderAdmin(user) {
+  return Boolean(
+    user?.email &&
+    user.email.toLowerCase() === PK_ORDER_ADMIN_EMAIL.toLowerCase()
+  );
+}
+
+function updateOrdersAdminButton(user) {
+  const btn = document.getElementById('pkOrdersAdminButton');
+  if (btn) btn.style.display = isOrderAdmin(user) ? 'inline-flex' : 'none';
+}
+
+async function openAdminOrders() {
+  const { data } = await pkSupabase.auth.getUser();
+  if (!isOrderAdmin(data?.user)) {
+    alert('Admin access only.');
+    return;
+  }
+
+  const modal = document.getElementById('adminOrdersModal');
+  modal.classList.add('open');
+  modal.setAttribute('aria-hidden','false');
+  await loadAdminOrders();
+}
+
+function closeAdminOrders() {
+  const modal = document.getElementById('adminOrdersModal');
+  modal?.classList.remove('open');
+  modal?.setAttribute('aria-hidden','true');
+}
+
+async function loadAdminOrders() {
+  const { data:userData } = await pkSupabase.auth.getUser();
+  if (!isOrderAdmin(userData?.user)) return;
+
+  const { data:orders, error } = await pkSupabase
+    .from('orders')
+    .select('*')
+    .order('created_at', { ascending:false })
+    .limit(200);
+
+  if (error) {
+    document.getElementById('adminOrdersList').innerHTML =
+      `<div class="wishlist-empty">${escapeHtml(error.message)}</div>`;
+    return;
+  }
+
+  const all = orders || [];
+  document.getElementById('adminOrdersTotal').textContent = all.length;
+  document.getElementById('adminOrdersPending').textContent =
+    all.filter(o => o.order_status === 'pending').length;
+  document.getElementById('adminOrdersConfirmed').textContent =
+    all.filter(o => o.order_status === 'confirmed').length;
+  document.getElementById('adminOrdersDelivered').textContent =
+    all.filter(o => o.order_status === 'delivered').length;
+
+  const box = document.getElementById('adminOrdersList');
+
+  if (!all.length) {
+    box.innerHTML = '<div class="wishlist-empty">No orders yet.</div>';
+    return;
+  }
+
+  box.innerHTML = all.map(order => {
+    const items = (order.items || []).map(item =>
+      `${escapeHtml(item.code || '')} • ${escapeHtml(item.name || '')}${item.size ? ' • Size ' + escapeHtml(item.size) : ''} × ${item.qty}`
+    ).join('<br>');
+
+    return `
+      <div class="admin-order-row">
+        <div class="admin-order-head">
+          <div>
+            <strong>${escapeHtml(order.order_code)}</strong>
+            <div class="visitor-muted">
+              ${escapeHtml(order.customer_name || '')} • ${escapeHtml(order.customer_email || '')}
+            </div>
+          </div>
+          <span class="order-status">${escapeHtml(order.order_status)}</span>
+        </div>
+
+        <div class="order-meta">
+          ${items}
+          <br><strong>Total: Rs. ${Number(order.subtotal).toLocaleString()}</strong>
+          <br>${escapeHtml(order.phone || '')} • ${escapeHtml(order.district || '')}
+          <br>${escapeHtml(order.address || '')}
+          <br>Payment: ${escapeHtml(order.payment_status || '')} • ${new Date(order.created_at).toLocaleString()}
+        </div>
+
+        <div class="admin-order-actions">
+          <button onclick="updateOrderStatus('${order.id}','pending')">Pending</button>
+          <button onclick="updateOrderStatus('${order.id}','confirmed')">Confirm</button>
+          <button onclick="updateOrderStatus('${order.id}','preparing')">Preparing</button>
+          <button onclick="updateOrderStatus('${order.id}','shipped')">Shipped</button>
+          <button onclick="updateOrderStatus('${order.id}','delivered')">Delivered</button>
+          <button onclick="updateOrderStatus('${order.id}','cancelled')">Cancel</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+async function updateOrderStatus(orderId, status) {
+  const { data:userData } = await pkSupabase.auth.getUser();
+  if (!isOrderAdmin(userData?.user)) return;
+
+  const { error } = await pkSupabase
+    .from('orders')
+    .update({ order_status:status })
+    .eq('id', orderId);
+
+  if (error) return alert(error.message);
+
+  await loadAdminOrders();
+}
+
+document.getElementById('checkoutModal')?.addEventListener('click', e => {
+  if (e.target.id === 'checkoutModal') closeCheckoutForm();
+});
+
+document.getElementById('adminOrdersModal')?.addEventListener('click', e => {
+  if (e.target.id === 'adminOrdersModal') closeAdminOrders();
+});
+
+pkSupabase.auth.onAuthStateChange((_event, session) => {
+  updateOrdersAdminButton(session?.user || null);
+  if (session?.user) setTimeout(loadMyOrders, 500);
+});
+
+(async () => {
+  const { data } = await pkSupabase.auth.getSession();
+  const user = data.session?.user || null;
+  updateOrdersAdminButton(user);
+  if (user) await loadMyOrders();
+})();
 
 </script>
 
