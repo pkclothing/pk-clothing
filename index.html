@@ -2926,6 +2926,27 @@
       .search-result-price { grid-column: 2; }
     }
 
+
+/* ===== PK Clothing Checkout + Orders ===== */
+.checkout-modal{display:none;position:fixed;inset:0;z-index:8000;background:rgba(0,0,0,.62);padding:18px;overflow-y:auto}
+.checkout-modal.open{display:flex;align-items:flex-start;justify-content:center}
+.checkout-card{width:min(720px,100%);background:#fff;border-radius:22px;padding:28px;margin:28px auto;position:relative;box-shadow:0 24px 70px rgba(0,0,0,.22)}
+.checkout-close{position:absolute;right:16px;top:12px;border:0;background:transparent;font-size:30px;cursor:pointer}
+.checkout-card h3{margin:0 0 6px;font-size:30px}.checkout-help{margin:0 0 20px;color:#777;font-size:13px}
+.checkout-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.checkout-field{margin-bottom:12px}.checkout-field.full{grid-column:1/-1}
+.checkout-field label{display:block;font-size:12px;font-weight:900;margin-bottom:6px}
+.checkout-field input,.checkout-field textarea{width:100%;border:1px solid #ddd;border-radius:11px;padding:12px 13px;font:inherit;background:#fff;box-sizing:border-box}
+.checkout-field textarea{min-height:90px;resize:vertical}
+.checkout-order-summary,.checkout-payment{border:1px solid #e5e5e5;border-radius:14px;padding:14px;margin:8px 0 15px;background:#fafafa}
+.checkout-summary-row{display:flex;justify-content:space-between;gap:12px;padding:6px 0;font-size:13px}
+.checkout-summary-total{display:flex;justify-content:space-between;gap:12px;border-top:1px solid #ddd;margin-top:7px;padding-top:12px;font-size:18px;font-weight:900}
+.checkout-payment strong{display:block;margin-bottom:7px}.checkout-payment-note{font-size:12px;color:#666;line-height:1.5}
+.checkout-place{width:100%;border:0;border-radius:11px;background:#111;color:#fff;padding:14px 16px;font-weight:900;cursor:pointer}
+.checkout-place:disabled{opacity:.55;cursor:not-allowed}.checkout-message{min-height:20px;margin-top:10px;font-size:13px}
+.checkout-message.error{color:#b42318}.checkout-message.success{color:#15803d}
+.order-success{text-align:center;padding:16px 0 4px}.order-success-code{font-size:28px;font-weight:900;margin:9px 0}
+@media(max-width:650px){.checkout-grid{grid-template-columns:1fr}.checkout-field.full{grid-column:auto}.checkout-card{padding:24px 18px;margin:10px auto}}
+
 </style>
 
   <script type="application/ld+json">
@@ -3716,32 +3737,49 @@
       Redeem these points on your next purchase from PK Clothing.
     </div>
 
-    <div class="payment-box">
-      <div class="payment-box-title">Payment Method</div>
-
-      <label class="payment-option">
-        <input type="radio" name="paymentMethod" value="Cash on Delivery" checked onchange="toggleEsewaNote()">
-        Cash on Delivery
-      </label>
-
-      <label class="payment-option">
-        <input type="radio" name="paymentMethod" value="eSewa" onchange="toggleEsewaNote()">
-        eSewa
-      </label>
-
-      <div class="esewa-note" id="esewaNote">
-        eSewa selected. After checkout, PK Clothing can send the customer the eSewa payment details / QR and confirm the payment before dispatch.
-      </div>
-    </div>
-
-    <button class="checkout-btn" type="button" onclick="checkoutCart()">
-      CHECKOUT ON WHATSAPP
+    <button class="checkout-btn" type="button" onclick="openCheckoutForm()">
+      PROCEED TO CHECKOUT
     </button>
     <button class="continue-btn" type="button" onclick="closeCart()">
       CONTINUE SHOPPING
     </button>
   </div>
 </aside>
+
+
+<div class="checkout-modal" id="checkoutModal" aria-hidden="true">
+  <div class="checkout-card">
+    <button class="checkout-close" type="button" onclick="closeCheckoutForm()">×</button>
+    <div id="checkoutFormView">
+      <h3>Checkout</h3>
+      <p class="checkout-help">Enter your delivery information to place your PK Clothing order.</p>
+      <div class="checkout-grid">
+        <div class="checkout-field"><label for="checkoutName">Full Name</label><input id="checkoutName" type="text" autocomplete="name" placeholder="Full name"></div>
+        <div class="checkout-field"><label for="checkoutPhone">Phone Number</label><input id="checkoutPhone" type="tel" autocomplete="tel" placeholder="98XXXXXXXX"></div>
+        <div class="checkout-field"><label for="checkoutProvince">Province</label><input id="checkoutProvince" type="text" placeholder="Province"></div>
+        <div class="checkout-field"><label for="checkoutDistrict">District / City</label><input id="checkoutDistrict" type="text" placeholder="District or city"></div>
+        <div class="checkout-field full"><label for="checkoutAddress">Full Delivery Address</label><textarea id="checkoutAddress" autocomplete="street-address" placeholder="Area, street, landmark and delivery details"></textarea></div>
+        <div class="checkout-field full"><label for="checkoutNote">Order Note (optional)</label><textarea id="checkoutNote" placeholder="Any special request?"></textarea></div>
+      </div>
+      <div class="checkout-order-summary">
+        <strong>Order Summary</strong><div id="checkoutOrderSummary"></div>
+        <div class="checkout-summary-total"><span>Total</span><span id="checkoutOrderTotal">Rs. 0</span></div>
+      </div>
+      <div class="checkout-payment">
+        <strong>Payment Method: eSewa</strong>
+        <div class="checkout-payment-note">Your order will be recorded first. PK Clothing can confirm the eSewa payment details before dispatch. Cash on Delivery is not enabled.</div>
+      </div>
+      <button class="checkout-place" id="placeOrderButton" type="button" onclick="placeOrder()">PLACE ORDER</button>
+      <div class="checkout-message" id="checkoutMessage"></div>
+    </div>
+    <div id="checkoutSuccessView" class="order-success" style="display:none">
+      <h3>Order Placed ✓</h3><p>Your PK Clothing order number is:</p>
+      <div class="order-success-code" id="checkoutSuccessCode"></div>
+      <p>Your order has been saved. PK Clothing can now see it in Supabase.</p>
+      <button class="checkout-place" type="button" onclick="closeCheckoutForm()">CONTINUE SHOPPING</button>
+    </div>
+  </div>
+</div>
 
 <div class="cart-toast" id="cartToast">Added to cart</div>
 
@@ -4403,23 +4441,90 @@ function closeCart() {
   document.getElementById('cartOverlay')?.classList.remove('open');
 }
 
-function toggleEsewaNote() {
-  const selected = document.querySelector('input[name="paymentMethod"]:checked');
-  document.getElementById('esewaNote')?.classList.toggle('show', selected?.value === 'eSewa');
+function createPkOrderCode() {
+  return `PK${Date.now().toString().slice(-8)}${Math.floor(10 + Math.random() * 90)}`;
 }
-
-function checkoutCart() {
+function setCheckoutMessage(message, type = '') {
+  const el = document.getElementById('checkoutMessage');
+  if (!el) return;
+  el.textContent = message || '';
+  el.className = 'checkout-message' + (type ? ' ' + type : '');
+}
+async function openCheckoutForm() {
   const cart = getCart();
   if (!cart.length) return alert('Your cart is empty.');
-
-  const payment = document.querySelector('input[name="paymentMethod"]:checked')?.value || 'Cash on Delivery';
-  const subtotal = cart.reduce((s,i) => s + i.price * i.qty, 0);
-  const rewards = Math.round(subtotal * 0.05);
-  const lines = cart.map((i,n) => `${n+1}. ${i.code} – ${i.name}\nQty: ${i.qty} × Rs. ${i.price.toLocaleString()} = Rs. ${(i.price*i.qty).toLocaleString()}`);
-
-  const message = `Hi PK Clothing! I want to place an order:\n\n${lines.join('\n\n')}\n\nSubtotal: Rs. ${subtotal.toLocaleString()}\nReward Points Earned (5%): Rs. ${rewards.toLocaleString()}\nPayment Method: ${payment}\n\nPlease confirm size/color and delivery charge.`;
-  window.open('https://wa.me/9779863997137?text=' + encodeURIComponent(message), '_blank');
+  const { data } = await pkSupabase.auth.getUser();
+  const user = data?.user;
+  if (!user) return alert('Please log in before checkout.');
+  closeCart();
+  document.getElementById('checkoutName').value = user.user_metadata?.full_name || user.user_metadata?.name || '';
+  document.getElementById('checkoutFormView').style.display = 'block';
+  document.getElementById('checkoutSuccessView').style.display = 'none';
+  setCheckoutMessage('');
+  const total = cart.reduce((sum,item) => sum + Number(item.price)*Number(item.qty), 0);
+  document.getElementById('checkoutOrderSummary').innerHTML = cart.map(item => `
+    <div class="checkout-summary-row">
+      <span>${escapeHtml(item.name)}${item.size ? ' • Size ' + escapeHtml(item.size) : ''} × ${item.qty}</span>
+      <strong>Rs. ${(Number(item.price)*Number(item.qty)).toLocaleString()}</strong>
+    </div>`).join('');
+  document.getElementById('checkoutOrderTotal').textContent = `Rs. ${total.toLocaleString()}`;
+  const modal = document.getElementById('checkoutModal');
+  modal.classList.add('open'); modal.setAttribute('aria-hidden','false');
 }
+function closeCheckoutForm() {
+  const modal = document.getElementById('checkoutModal');
+  modal?.classList.remove('open'); modal?.setAttribute('aria-hidden','true');
+}
+async function placeOrder() {
+  const cart = getCart();
+  if (!cart.length) return setCheckoutMessage('Your cart is empty.','error');
+  const { data } = await pkSupabase.auth.getUser();
+  const user = data?.user;
+  if (!user) return setCheckoutMessage('Please log in again before placing the order.','error');
+
+  const customerName = document.getElementById('checkoutName').value.trim();
+  const phone = document.getElementById('checkoutPhone').value.trim();
+  const province = document.getElementById('checkoutProvince').value.trim();
+  const district = document.getElementById('checkoutDistrict').value.trim();
+  const address = document.getElementById('checkoutAddress').value.trim();
+  const note = document.getElementById('checkoutNote').value.trim();
+
+  if (!customerName || !phone || !district || !address)
+    return setCheckoutMessage('Please enter your name, phone, district/city and full delivery address.','error');
+  if (!/^[0-9+\-\s]{7,20}$/.test(phone))
+    return setCheckoutMessage('Please enter a valid phone number.','error');
+
+  const subtotal = cart.reduce((sum,item) => sum + Number(item.price)*Number(item.qty), 0);
+  const orderCode = createPkOrderCode();
+  const items = cart.map(item => ({
+    code:item.code,name:item.name,size:item.size || null,qty:Number(item.qty),
+    unit_price:Number(item.price),line_total:Number(item.price)*Number(item.qty)
+  }));
+
+  const button = document.getElementById('placeOrderButton');
+  button.disabled = true; button.textContent = 'PLACING ORDER...';
+  setCheckoutMessage('Saving your order...');
+
+  const { data:savedOrder, error } = await pkSupabase.from('orders').insert({
+    order_code:orderCode,user_id:user.id,customer_email:user.email,
+    customer_name:customerName,phone,province:province || null,district,address,
+    note:note || null,items,subtotal,reward_points:Math.round(subtotal*.05),
+    payment_status:'unpaid',order_status:'pending'
+  }).select('order_code').single();
+
+  button.disabled = false; button.textContent = 'PLACE ORDER';
+  if (error) {
+    console.error(error);
+    return setCheckoutMessage('Could not place the order: ' + error.message,'error');
+  }
+  saveCart([]);
+  document.getElementById('checkoutFormView').style.display = 'none';
+  document.getElementById('checkoutSuccessCode').textContent = savedOrder?.order_code || orderCode;
+  document.getElementById('checkoutSuccessView').style.display = 'block';
+}
+document.getElementById('checkoutModal')?.addEventListener('click', e => {
+  if (e.target.id === 'checkoutModal') closeCheckoutForm();
+});
 
 function showCartToast(message) {
   const toast = document.getElementById('cartToast');
