@@ -2748,6 +2748,184 @@
       }
     }
 
+
+    /* ===== Search + Wishlist ===== */
+    .header-icon-btn {
+      width: 40px;
+      height: 40px;
+      min-width: 40px;
+      border: 1px solid #ddd;
+      border-radius: 50%;
+      background: #fff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 17px;
+    }
+
+    .search-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 7200;
+      background: rgba(0,0,0,.5);
+      padding: 18px;
+    }
+
+    .search-overlay.open {
+      display: block;
+    }
+
+    .search-panel {
+      width: min(760px, 100%);
+      margin: 50px auto 0;
+      background: #fff;
+      border-radius: 20px;
+      padding: 22px;
+      max-height: 80vh;
+      overflow-y: auto;
+      position: relative;
+    }
+
+    .search-panel h3 {
+      margin: 0 0 14px;
+      font-size: 26px;
+    }
+
+    .search-close {
+      position: absolute;
+      right: 16px;
+      top: 13px;
+      border: 0;
+      background: transparent;
+      font-size: 28px;
+      cursor: pointer;
+    }
+
+    .search-input {
+      width: 100%;
+      border: 1px solid #ccc;
+      border-radius: 12px;
+      padding: 14px 15px;
+      font: inherit;
+      outline: none;
+    }
+
+    .search-results {
+      margin-top: 14px;
+    }
+
+    .search-result {
+      display: grid;
+      grid-template-columns: 72px 1fr auto;
+      gap: 12px;
+      align-items: center;
+      border-top: 1px solid var(--line);
+      padding: 12px 0;
+      cursor: pointer;
+    }
+
+    .search-result img {
+      width: 72px;
+      height: 88px;
+      object-fit: cover;
+      border-radius: 9px;
+      background: #f4f4f2;
+    }
+
+    .search-result-name {
+      font-weight: 900;
+      margin-bottom: 4px;
+    }
+
+    .search-result-meta {
+      color: #777;
+      font-size: 12px;
+    }
+
+    .search-result-price {
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .wishlist-heart {
+      position: absolute;
+      right: 11px;
+      top: 11px;
+      z-index: 4;
+      width: 38px;
+      height: 38px;
+      border: 0;
+      border-radius: 50%;
+      background: rgba(255,255,255,.94);
+      box-shadow: 0 3px 12px rgba(0,0,0,.08);
+      font-size: 20px;
+      cursor: pointer;
+    }
+
+    .wishlist-heart.saved {
+      color: #111;
+      font-weight: 900;
+    }
+
+    .product-card {
+      position: relative;
+    }
+
+    .wishlist-account-section {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 18px;
+      margin-bottom: 16px;
+    }
+
+    .wishlist-account-section h4 {
+      margin: 0 0 12px;
+      font-size: 19px;
+    }
+
+    .wishlist-account-item {
+      display: grid;
+      grid-template-columns: 62px 1fr auto;
+      gap: 10px;
+      align-items: center;
+      padding: 10px 0;
+      border-top: 1px solid var(--line);
+    }
+
+    .wishlist-account-item:first-of-type {
+      border-top: 0;
+    }
+
+    .wishlist-account-item img {
+      width: 62px;
+      height: 74px;
+      object-fit: cover;
+      border-radius: 8px;
+    }
+
+    .wishlist-open-btn {
+      border: 1px solid #111;
+      background: #fff;
+      border-radius: 9px;
+      padding: 8px 10px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .wishlist-empty {
+      color: #777;
+      font-size: 13px;
+      padding: 8px 0;
+    }
+
+    @media(max-width:650px) {
+      .search-panel { margin-top: 15px; }
+      .search-result { grid-template-columns: 60px 1fr; }
+      .search-result-price { grid-column: 2; }
+    }
+
 </style>
 
   <script type="application/ld+json">
@@ -2766,6 +2944,25 @@
 </head>
 
 <body class="auth-locked">
+
+<div class="search-overlay" id="productSearchOverlay" aria-hidden="true">
+  <div class="search-panel">
+    <button class="search-close" type="button" onclick="closeProductSearch()">×</button>
+    <h3>Search PK Clothing</h3>
+    <input
+      class="search-input"
+      id="productSearchInput"
+      type="search"
+      placeholder="Search kurti, white, PK004, Rs. 900..."
+      autocomplete="off"
+      oninput="renderProductSearch(this.value)"
+    >
+    <div class="search-results" id="productSearchResults">
+      <div class="wishlist-empty">Start typing to find a product.</div>
+    </div>
+  </div>
+</div>
+
 
 
 <div class="auth-gate" id="authGate">
@@ -2860,6 +3057,9 @@
 
       <button class="admin-button" id="pkAdminButton" type="button" onclick="openVisitorAdmin()">
         📊 Admin
+      </button>
+      <button class="header-icon-btn" type="button" onclick="openProductSearch()" aria-label="Search" title="Search">
+        🔍
       </button>
       <button class="cart-button" type="button" onclick="openCart()">
         🛒 Cart
@@ -3433,6 +3633,14 @@
 
       <div class="account-profile-section">
         <h4>My PK Rewards</h4>
+      </div>
+
+      
+      <div class="wishlist-account-section">
+        <h4>♡ My Wishlist</h4>
+        <div id="accountWishlist">
+          <div class="wishlist-empty">You haven't saved any products yet.</div>
+        </div>
       </div>
 
       <div class="reward-balance">
@@ -4861,6 +5069,145 @@ function orderSelectedProductOnWhatsApp() {
 document.getElementById('productDetailModal')?.addEventListener('click', function(e) {
   if (e.target.id === 'productDetailModal') closeProductDetail();
 });
+
+
+// ===== Product Search + Wishlist =====
+const PK_WISHLIST_KEY = 'pk_clothing_wishlist';
+
+function getPkWishlist() {
+  try {
+    return JSON.parse(localStorage.getItem(PK_WISHLIST_KEY) || '[]');
+  } catch (_) {
+    return [];
+  }
+}
+
+function savePkWishlist(items) {
+  localStorage.setItem(PK_WISHLIST_KEY, JSON.stringify(items));
+  renderWishlistHearts();
+  renderAccountWishlist();
+}
+
+function toggleWishlist(code) {
+  const items = getPkWishlist();
+  const index = items.indexOf(code);
+
+  if (index >= 0) items.splice(index, 1);
+  else items.push(code);
+
+  savePkWishlist(items);
+}
+
+function renderWishlistHearts() {
+  const saved = new Set(getPkWishlist());
+
+  Object.keys(PK_PRODUCTS).forEach(code => {
+    const heart = document.getElementById(`wish-${code}`);
+    if (!heart) return;
+
+    const active = saved.has(code);
+    heart.textContent = active ? '♥' : '♡';
+    heart.classList.toggle('saved', active);
+    heart.setAttribute('aria-label', active ? `Remove ${code} from wishlist` : `Save ${code} to wishlist`);
+  });
+}
+
+function renderAccountWishlist() {
+  const box = document.getElementById('accountWishlist');
+  if (!box || typeof PK_PRODUCTS === 'undefined') return;
+
+  const codes = getPkWishlist().filter(code => PK_PRODUCTS[code]);
+
+  if (!codes.length) {
+    box.innerHTML = '<div class="wishlist-empty">You haven’t saved any products yet.</div>';
+    return;
+  }
+
+  box.innerHTML = codes.map(code => {
+    const p = PK_PRODUCTS[code];
+    return `
+      <div class="wishlist-account-item">
+        <img src="${p.image}" alt="${escapeHtml(p.name)}">
+        <div>
+          <strong>${escapeHtml(p.name)}</strong>
+          <div class="visitor-muted">${code} • Rs. ${Number(p.price).toLocaleString()}</div>
+        </div>
+        <button class="wishlist-open-btn" type="button"
+          onclick="closeAccount(); openProductDetail('${code}')">
+          VIEW
+        </button>
+      </div>
+    `;
+  }).join('');
+}
+
+function openProductSearch() {
+  const overlay = document.getElementById('productSearchOverlay');
+  overlay.classList.add('open');
+  overlay.setAttribute('aria-hidden', 'false');
+
+  const input = document.getElementById('productSearchInput');
+  setTimeout(() => input?.focus(), 50);
+}
+
+function closeProductSearch() {
+  const overlay = document.getElementById('productSearchOverlay');
+  overlay.classList.remove('open');
+  overlay.setAttribute('aria-hidden', 'true');
+}
+
+function renderProductSearch(query) {
+  const box = document.getElementById('productSearchResults');
+  const q = String(query || '').trim().toLowerCase();
+
+  if (!q) {
+    box.innerHTML = '<div class="wishlist-empty">Start typing to find a product.</div>';
+    return;
+  }
+
+  const results = Object.entries(PK_PRODUCTS).filter(([code, p]) => {
+    const haystack = [
+      code,
+      p.name,
+      p.description,
+      p.price,
+      ...(p.sizes || [])
+    ].join(' ').toLowerCase();
+
+    return haystack.includes(q);
+  });
+
+  if (!results.length) {
+    box.innerHTML = `<div class="wishlist-empty">No products found for “${escapeHtml(query)}”.</div>`;
+    return;
+  }
+
+  box.innerHTML = results.map(([code, p]) => `
+    <div class="search-result" onclick="closeProductSearch(); openProductDetail('${code}')">
+      <img src="${p.image}" alt="${escapeHtml(p.name)}">
+      <div>
+        <div class="search-result-name">${escapeHtml(p.name)}</div>
+        <div class="search-result-meta">${code} • ${escapeHtml(p.stock || 'In Stock')}</div>
+      </div>
+      <div class="search-result-price">Rs. ${Number(p.price).toLocaleString()}</div>
+    </div>
+  `).join('');
+}
+
+document.getElementById('productSearchOverlay')?.addEventListener('click', e => {
+  if (e.target.id === 'productSearchOverlay') closeProductSearch();
+});
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    closeProductSearch();
+  }
+});
+
+setTimeout(() => {
+  renderWishlistHearts();
+  renderAccountWishlist();
+}, 0);
 
 </script>
 
