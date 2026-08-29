@@ -2341,6 +2341,109 @@
       .visitor-row { grid-template-columns: 1fr; }
     }
 
+
+    /* ===== Account profile / password manager ===== */
+    .account-profile-section {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 18px;
+      margin-bottom: 16px;
+      background: #fff;
+    }
+
+    .account-profile-section h4 {
+      margin: 0 0 13px;
+      font-size: 19px;
+    }
+
+    .profile-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .profile-field {
+      margin-bottom: 10px;
+    }
+
+    .profile-field.full {
+      grid-column: 1 / -1;
+    }
+
+    .profile-field label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 12px;
+      font-weight: 900;
+      color: #555;
+    }
+
+    .profile-field input,
+    .profile-field select {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      padding: 12px 13px;
+      font: inherit;
+      background: #fff;
+    }
+
+    .profile-field input[readonly] {
+      background: #f7f7f5;
+      color: #666;
+    }
+
+    .profile-save-btn,
+    .password-change-btn {
+      width: 100%;
+      border: 0;
+      border-radius: 11px;
+      background: #000;
+      color: #fff;
+      padding: 12px 14px;
+      font-weight: 900;
+      cursor: pointer;
+      margin-top: 4px;
+    }
+
+    .profile-message {
+      min-height: 18px;
+      margin-top: 9px;
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .profile-message.success { color: #15803d; }
+    .profile-message.error { color: #b42318; }
+
+    .password-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .password-note {
+      font-size: 12px;
+      color: #777;
+      line-height: 1.5;
+      margin-bottom: 10px;
+    }
+
+    .account-top-name {
+      font-weight: 900;
+    }
+
+    @media(max-width: 650px) {
+      .profile-grid,
+      .password-row {
+        grid-template-columns: 1fr;
+      }
+
+      .profile-field.full {
+        grid-column: auto;
+      }
+    }
+
 </style>
 
   <script type="application/ld+json">
@@ -2450,14 +2553,11 @@
     </nav>
 
     <div style="display:flex;align-items:center;gap:10px;">
-      <button class="account-button" type="button" onclick="openAccount()">
-        👤 My Rewards
+      <button class="account-button" id="accountHeaderButton" type="button" onclick="openAccount()">
+        👤 <span id="accountHeaderName">My Account</span>
       </button>
       <button class="admin-button" id="pkAdminButton" type="button" onclick="openVisitorAdmin()">
         📊 Admin
-      </button>
-      <button class="account-button" type="button" onclick="openSignIn()">
-        Sign In
       </button>
       <button class="cart-button" type="button" onclick="openCart()">
         🛒 Cart
@@ -2959,8 +3059,72 @@
     </div>
 
     <div id="rewardDashboard" class="reward-dashboard">
-      <h3>My PK Rewards</h3>
+      <h3>My Account</h3>
       <div class="account-user-line" id="accountUserLine"><span class="account-email"></span></div>
+
+      <div class="account-profile-section">
+        <h4>Account Information</h4>
+
+        <div class="profile-grid">
+          <div class="profile-field full">
+            <label for="profileFullName">Full Name</label>
+            <input id="profileFullName" type="text" placeholder="Enter your full name" autocomplete="name">
+          </div>
+
+          <div class="profile-field full">
+            <label for="profileEmail">Email Address</label>
+            <input id="profileEmail" type="email" readonly>
+          </div>
+
+          <div class="profile-field">
+            <label for="profileGender">Gender</label>
+            <select id="profileGender">
+              <option value="">Prefer not to say</option>
+              <option value="female">Female</option>
+              <option value="male">Male</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+
+          <div class="profile-field">
+            <label for="profileBirthday">Birthday</label>
+            <input id="profileBirthday" type="date">
+          </div>
+        </div>
+
+        <button class="profile-save-btn" type="button" onclick="saveAccountProfile()">
+          SAVE ACCOUNT INFORMATION
+        </button>
+        <div id="profileMessage" class="profile-message"></div>
+      </div>
+
+      <div class="account-profile-section">
+        <h4>Password Manager</h4>
+        <div class="password-note">
+          For security, your current password cannot be displayed. You can securely create a new password here.
+        </div>
+
+        <div class="password-row">
+          <div class="profile-field">
+            <label for="newAccountPassword">New Password</label>
+            <input id="newAccountPassword" type="password" minlength="6" placeholder="New password" autocomplete="new-password">
+          </div>
+
+          <div class="profile-field">
+            <label for="confirmAccountPassword">Confirm Password</label>
+            <input id="confirmAccountPassword" type="password" minlength="6" placeholder="Confirm password" autocomplete="new-password">
+          </div>
+        </div>
+
+        <button class="password-change-btn" type="button" onclick="changeAccountPassword()">
+          CHANGE PASSWORD
+        </button>
+        <div id="passwordMessage" class="profile-message"></div>
+      </div>
+
+      <div class="account-profile-section">
+        <h4>My PK Rewards</h4>
+      </div>
 
       <div class="reward-balance">
         <div class="reward-balance-label">Available Reward Balance</div>
@@ -3332,6 +3496,136 @@ async function logoutSupabaseAccount() {
   showRewardLogin();
 }
 
+
+// ===== Account profile and password manager =====
+function getAccountDisplayName(user) {
+  const fullName = (user?.user_metadata?.full_name || '').trim();
+  if (fullName) return fullName.split(/\s+/)[0];
+
+  const email = user?.email || '';
+  if (email.includes('@')) {
+    const prefix = email.split('@')[0].replace(/[._-]+/g, ' ').trim();
+    if (prefix) return prefix.charAt(0).toUpperCase() + prefix.slice(1);
+  }
+
+  return 'My Account';
+}
+
+function updateAccountHeader(user) {
+  const el = document.getElementById('accountHeaderName');
+  if (!el) return;
+  el.textContent = user ? getAccountDisplayName(user) : 'My Account';
+}
+
+function fillAccountProfile(user) {
+  if (!user) return;
+
+  const metadata = user.user_metadata || {};
+
+  const fullName = document.getElementById('profileFullName');
+  const email = document.getElementById('profileEmail');
+  const gender = document.getElementById('profileGender');
+  const birthday = document.getElementById('profileBirthday');
+
+  if (fullName) fullName.value = metadata.full_name || '';
+  if (email) email.value = user.email || '';
+  if (gender) gender.value = metadata.gender || '';
+  if (birthday) birthday.value = metadata.birthday || '';
+
+  updateAccountHeader(user);
+}
+
+async function saveAccountProfile() {
+  const fullName = (document.getElementById('profileFullName')?.value || '').trim();
+  const gender = document.getElementById('profileGender')?.value || '';
+  const birthday = document.getElementById('profileBirthday')?.value || '';
+  const message = document.getElementById('profileMessage');
+
+  if (message) {
+    message.textContent = 'Saving…';
+    message.className = 'profile-message';
+  }
+
+  if (!fullName) {
+    if (message) {
+      message.textContent = 'Please enter your full name.';
+      message.className = 'profile-message error';
+    }
+    return;
+  }
+
+  const { data, error } = await pkSupabase.auth.updateUser({
+    data: {
+      full_name: fullName,
+      gender,
+      birthday
+    }
+  });
+
+  if (error) {
+    if (message) {
+      message.textContent = error.message;
+      message.className = 'profile-message error';
+    }
+    return;
+  }
+
+  currentSupabaseUser = data.user || currentSupabaseUser;
+  fillAccountProfile(currentSupabaseUser);
+
+  if (message) {
+    message.textContent = 'Account information saved.';
+    message.className = 'profile-message success';
+  }
+}
+
+async function changeAccountPassword() {
+  const password = document.getElementById('newAccountPassword')?.value || '';
+  const confirmPassword = document.getElementById('confirmAccountPassword')?.value || '';
+  const message = document.getElementById('passwordMessage');
+
+  if (message) {
+    message.textContent = '';
+    message.className = 'profile-message';
+  }
+
+  if (password.length < 6) {
+    if (message) {
+      message.textContent = 'Password must be at least 6 characters.';
+      message.className = 'profile-message error';
+    }
+    return;
+  }
+
+  if (password !== confirmPassword) {
+    if (message) {
+      message.textContent = 'The two passwords do not match.';
+      message.className = 'profile-message error';
+    }
+    return;
+  }
+
+  if (message) message.textContent = 'Changing password…';
+
+  const { error } = await pkSupabase.auth.updateUser({ password });
+
+  if (error) {
+    if (message) {
+      message.textContent = error.message;
+      message.className = 'profile-message error';
+    }
+    return;
+  }
+
+  document.getElementById('newAccountPassword').value = '';
+  document.getElementById('confirmAccountPassword').value = '';
+
+  if (message) {
+    message.textContent = 'Password changed successfully.';
+    message.className = 'profile-message success';
+  }
+}
+
 async function showLoggedInAccount(user) {
   if (!user) return;
   currentSupabaseUser = user;
@@ -3339,7 +3633,11 @@ async function showLoggedInAccount(user) {
   document.getElementById('rewardDashboard').style.display = 'block';
 
   const email = user.email || 'Customer';
-  document.getElementById('accountUserLine').textContent = `Logged in as: ${email}`;
+  const fullName = (user.user_metadata?.full_name || '').trim();
+  document.getElementById('accountUserLine').textContent =
+    fullName ? `${fullName} • ${email}` : email;
+
+  fillAccountProfile(user);
 
   // Until the reward database table is connected, preserve rewards locally per Supabase user.
   const account = ensureRewardAccount(user.id);
@@ -3855,11 +4153,13 @@ async function loginWithPassword() {
 
 function unlockWebsite(user) {
   currentSupabaseUser = user || null;
+  updateAccountHeader(currentSupabaseUser);
   document.body.classList.remove('auth-locked');
   document.getElementById('authGate')?.classList.add('hidden');
 }
 
 function lockWebsite() {
+  updateAccountHeader(null);
   document.body.classList.add('auth-locked');
   document.getElementById('authGate')?.classList.remove('hidden');
 
