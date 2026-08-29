@@ -465,6 +465,56 @@
       line-height: 1.45;
     }
 
+
+    .auth-tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin: 16px 0;
+    }
+    .auth-tab {
+      border: 1px solid var(--line);
+      background: #fff;
+      padding: 11px;
+      border-radius: 10px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+    .auth-tab.active {
+      background: #000;
+      color: #fff;
+      border-color: #000;
+    }
+    .auth-input {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 13px 14px;
+      font: inherit;
+      margin-bottom: 10px;
+    }
+    .auth-primary {
+      width: 100%;
+      border: 0;
+      background: #000;
+      color: #fff;
+      border-radius: 12px;
+      padding: 13px 16px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+    .auth-message {
+      margin-top: 11px;
+      font-size: 13px;
+      line-height: 1.5;
+      min-height: 18px;
+    }
+    .auth-message.error { color: #b42318; }
+    .auth-message.success { color: #15803d; }
+    .account-email {
+      font-weight: 800;
+    }
+
     .account-button {
       border: 1px solid #000;
       background: #fff;
@@ -1981,6 +2031,7 @@
     "areaServed": "Nepal"
   }
   </script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 
 <body>
@@ -2010,6 +2061,9 @@
     <div style="display:flex;align-items:center;gap:10px;">
       <button class="account-button" type="button" onclick="openAccount()">
         👤 My Rewards
+      </button>
+      <button class="account-button" type="button" onclick="openSignIn()">
+        Sign In
       </button>
       <button class="cart-button" type="button" onclick="openCart()">
         🛒 Cart
@@ -2413,17 +2467,26 @@
     <button class="account-close" type="button" onclick="closeAccount()">×</button>
 
     <div id="accountLoginView" class="account-login">
-      <h3>My Rewards</h3>
+      <h3>PK Clothing Account</h3>
       <div class="account-sub">
-        Enter the same phone number you use when ordering from PK Clothing.
+        Sign up or log in with your email and password to access your account.
       </div>
-      <input id="accountPhone" type="tel" placeholder="98XXXXXXXX" maxlength="15">
-      <button type="button" onclick="loginRewardsAccount()">VIEW MY REWARDS</button>
+
+      <div class="auth-tabs">
+        <button id="loginTab" class="auth-tab active" type="button" onclick="showAuthMode('login')">LOG IN</button>
+        <button id="signupTab" class="auth-tab" type="button" onclick="showAuthMode('signup')">SIGN UP</button>
+      </div>
+
+      <input id="authEmail" class="auth-input" type="email" placeholder="Email address" autocomplete="email">
+      <input id="authPassword" class="auth-input" type="password" placeholder="Password" minlength="6" autocomplete="current-password">
+
+      <button id="authSubmitBtn" class="auth-primary" type="button" onclick="submitAuth()">LOG IN</button>
+      <div id="authMessage" class="auth-message"></div>
     </div>
 
     <div id="rewardDashboard" class="reward-dashboard">
       <h3>My PK Rewards</h3>
-      <div class="account-user-line" id="accountUserLine"></div>
+      <div class="account-user-line" id="accountUserLine"><span class="account-email"></span></div>
 
       <div class="reward-balance">
         <div class="reward-balance-label">Available Reward Balance</div>
@@ -2472,7 +2535,7 @@
       <div class="account-history-title">Recent Reward Activity</div>
       <div id="rewardHistory"></div>
 
-      <button class="account-logout" type="button" onclick="logoutRewardsAccount()">LOG OUT</button>
+      <button class="account-logout" type="button" onclick="logoutSupabaseAccount()">LOG OUT</button>
     </div>
   </div>
 </div>
@@ -2702,6 +2765,435 @@ if (reviewForm) {
 }
 
 renderReviews();
+
+
+// ===== Supabase authentication =====
+const SUPABASE_URL = 'https://czhgeqrrobvxphwzdbii.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_ATqZhQCB9qZJFwNy2dBFpw_JudmKHj3';
+const pkSupabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+
+let authMode = 'login';
+let currentSupabaseUser = null;
+
+function showAuthMode(mode) {
+  authMode = mode;
+  document.getElementById('loginTab')?.classList.toggle('active', mode === 'login');
+  document.getElementById('signupTab')?.classList.toggle('active', mode === 'signup');
+  const btn = document.getElementById('authSubmitBtn');
+  if (btn) btn.textContent = mode === 'login' ? 'LOG IN' : 'CREATE ACCOUNT';
+  const msg = document.getElementById('authMessage');
+  if (msg) {
+    msg.textContent = '';
+    msg.className = 'auth-message';
+  }
+}
+
+async function submitAuth() {
+  const email = (document.getElementById('authEmail')?.value || '').trim();
+  const password = document.getElementById('authPassword')?.value || '';
+  const msg = document.getElementById('authMessage');
+
+  if (!email || !password) {
+    if (msg) {
+      msg.textContent = 'Enter your email and password.';
+      msg.className = 'auth-message error';
+    }
+    return;
+  }
+
+  if (password.length < 6) {
+    if (msg) {
+      msg.textContent = 'Password must be at least 6 characters.';
+      msg.className = 'auth-message error';
+    }
+    return;
+  }
+
+  if (msg) {
+    msg.textContent = authMode === 'login' ? 'Logging in…' : 'Creating account…';
+    msg.className = 'auth-message';
+  }
+
+  if (authMode === 'signup') {
+    const { data, error } = await pkSupabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: window.location.origin + window.location.pathname
+      }
+    });
+
+    if (error) {
+      if (msg) {
+        msg.textContent = error.message;
+        msg.className = 'auth-message error';
+      }
+      return;
+    }
+
+    if (data.session) {
+      currentSupabaseUser = data.user;
+      await showLoggedInAccount(data.user);
+    } else if (msg) {
+      msg.textContent = 'Account created. Check your email and confirm your address, then log in.';
+      msg.className = 'auth-message success';
+    }
+  } else {
+    const { data, error } = await pkSupabase.auth.signInWithPassword({ email, password });
+    if (error) {
+      if (msg) {
+        msg.textContent = error.message;
+        msg.className = 'auth-message error';
+      }
+      return;
+    }
+    currentSupabaseUser = data.user;
+    await showLoggedInAccount(data.user);
+  }
+}
+
+async function logoutSupabaseAccount() {
+  await pkSupabase.auth.signOut();
+  currentSupabaseUser = null;
+  showRewardLogin();
+}
+
+async function showLoggedInAccount(user) {
+  if (!user) return;
+  currentSupabaseUser = user;
+  document.getElementById('accountLoginView').style.display = 'none';
+  document.getElementById('rewardDashboard').style.display = 'block';
+
+  const email = user.email || 'Customer';
+  document.getElementById('accountUserLine').textContent = `Logged in as: ${email}`;
+
+  // Until the reward database table is connected, preserve rewards locally per Supabase user.
+  const account = ensureRewardAccount(user.id);
+  document.getElementById('rewardBalanceValue').textContent = `Rs. ${Number(account.balance || 0).toLocaleString()}`;
+  document.getElementById('totalPurchasesValue').textContent = Number(account.purchases || 0).toLocaleString();
+  document.getElementById('totalEarnedValue').textContent = `Rs. ${Number(account.totalEarned || 0).toLocaleString()}`;
+
+  const referralCodeEl = document.getElementById('referralCode');
+  if (referralCodeEl) referralCodeEl.textContent = createReferralCode(user.id);
+
+  const history = document.getElementById('rewardHistory');
+  const items = Array.isArray(account.history) ? account.history.slice().reverse() : [];
+  if (history) {
+    history.innerHTML = items.length
+      ? items.map(item => `
+          <div class="history-item">
+            <strong>${escapeHtml(item.title || 'Reward activity')}</strong>
+            <span>${escapeHtml(item.note || '')}</span>
+          </div>`).join('')
+      : '<div class="empty-reviews">No confirmed reward activity yet.</div>';
+  }
+}
+
+async function openAccount() {
+  document.getElementById('accountModal').classList.add('open');
+  document.getElementById('accountModal').setAttribute('aria-hidden','false');
+  const { data } = await pkSupabase.auth.getSession();
+  if (data.session?.user) {
+    await showLoggedInAccount(data.session.user);
+  } else {
+    showRewardLogin();
+  }
+}
+
+function closeAccount() {
+  document.getElementById('accountModal').classList.remove('open');
+  document.getElementById('accountModal').setAttribute('aria-hidden','true');
+}
+
+function showRewardLogin() {
+  document.getElementById('accountLoginView').style.display = 'block';
+  document.getElementById('rewardDashboard').style.display = 'none';
+  showAuthMode('login');
+}
+
+// ===== Local reward helpers (temporary until rewards table is connected) =====
+const PK_REWARD_ACCOUNTS_KEY = 'pkRewardAccounts';
+
+function getRewardAccounts() {
+  return JSON.parse(localStorage.getItem(PK_REWARD_ACCOUNTS_KEY) || '{}');
+}
+
+function saveRewardAccounts(accounts) {
+  localStorage.setItem(PK_REWARD_ACCOUNTS_KEY, JSON.stringify(accounts));
+}
+
+function ensureRewardAccount(accountId) {
+  const accounts = getRewardAccounts();
+  if (!accounts[accountId]) {
+    accounts[accountId] = {
+      id: accountId,
+      balance: 0,
+      totalEarned: 0,
+      purchases: 0,
+      history: []
+    };
+    saveRewardAccounts(accounts);
+  }
+  return accounts[accountId];
+}
+
+function createReferralCode(value) {
+  let hash = 0;
+  const text = String(value || '');
+  for (let i = 0; i < text.length; i++) hash = ((hash << 5) - hash) + text.charCodeAt(i);
+  return 'PK' + String(Math.abs(hash)).slice(-6).padStart(6,'0');
+}
+
+function copyReferralCode() {
+  const code = document.getElementById('referralCode')?.textContent || '';
+  if (navigator.clipboard?.writeText) {
+    navigator.clipboard.writeText(code).then(() => alert('Referral code copied!'));
+  } else {
+    prompt('Copy your referral code:', code);
+  }
+}
+
+function shareReferral() {
+  if (!currentSupabaseUser) {
+    alert('Please log in first.');
+    return;
+  }
+  const code = createReferralCode(currentSupabaseUser.id);
+  const text = `Shop at PK Clothing and use my referral code ${code}.`;
+  if (navigator.share) {
+    navigator.share({ title: 'PK Clothing Referral', text }).catch(() => {});
+  } else {
+    window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank');
+  }
+}
+
+// ===== Cart =====
+const PK_CART_KEY = 'pkClothingCart';
+
+function getCart() {
+  return JSON.parse(localStorage.getItem(PK_CART_KEY) || '[]');
+}
+
+function saveCart(cart) {
+  localStorage.setItem(PK_CART_KEY, JSON.stringify(cart));
+  renderCart();
+}
+
+function addToCart(code, name, price, image) {
+  const cart = getCart();
+  const item = cart.find(i => i.code === code);
+  if (item) item.qty += 1;
+  else cart.push({ code, name, price, image, qty: 1 });
+  saveCart(cart);
+  showCartToast(`${name} added to cart`);
+}
+
+function changeQty(code, delta) {
+  const cart = getCart();
+  const item = cart.find(i => i.code === code);
+  if (!item) return;
+  item.qty += delta;
+  if (item.qty <= 0) cart.splice(cart.findIndex(i => i.code === code), 1);
+  saveCart(cart);
+}
+
+function removeFromCart(code) {
+  saveCart(getCart().filter(i => i.code !== code));
+}
+
+function renderCart() {
+  const cart = getCart();
+  const itemsEl = document.getElementById('cartItems');
+  const countEl = document.getElementById('cartCount');
+  const subtotalEl = document.getElementById('cartSubtotal');
+  const rewardEl = document.getElementById('cartRewardPoints');
+
+  const totalQty = cart.reduce((s,i) => s + i.qty, 0);
+  const subtotal = cart.reduce((s,i) => s + i.price * i.qty, 0);
+  const rewards = Math.round(subtotal * 0.05);
+
+  if (countEl) countEl.textContent = totalQty;
+  if (subtotalEl) subtotalEl.textContent = `Rs. ${subtotal.toLocaleString()}`;
+  if (rewardEl) rewardEl.textContent = `🎁 You’ll earn Rs. ${rewards.toLocaleString()} in reward points`;
+
+  if (!itemsEl) return;
+  if (!cart.length) {
+    itemsEl.innerHTML = '<div class="cart-empty">Your cart is empty.<br>Add products and continue shopping.</div>';
+    return;
+  }
+
+  itemsEl.innerHTML = cart.map(item => `
+    <div class="cart-item">
+      <img src="${escapeHtml(item.image)}" alt="${escapeHtml(item.name)}">
+      <div>
+        <div class="cart-item-name">${escapeHtml(item.name)}</div>
+        <div class="cart-item-code">${escapeHtml(item.code)}</div>
+        <div class="cart-item-price">Rs. ${(item.price * item.qty).toLocaleString()}</div>
+        <div class="qty-row">
+          <button class="qty-btn" onclick="changeQty('${item.code}',-1)">−</button>
+          <strong>${item.qty}</strong>
+          <button class="qty-btn" onclick="changeQty('${item.code}',1)">+</button>
+          <button class="remove-cart" onclick="removeFromCart('${item.code}')">Remove</button>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function openCart() {
+  document.getElementById('cartDrawer')?.classList.add('open');
+  document.getElementById('cartOverlay')?.classList.add('open');
+}
+
+function closeCart() {
+  document.getElementById('cartDrawer')?.classList.remove('open');
+  document.getElementById('cartOverlay')?.classList.remove('open');
+}
+
+function toggleEsewaNote() {
+  const selected = document.querySelector('input[name="paymentMethod"]:checked');
+  document.getElementById('esewaNote')?.classList.toggle('show', selected?.value === 'eSewa');
+}
+
+function checkoutCart() {
+  const cart = getCart();
+  if (!cart.length) return alert('Your cart is empty.');
+
+  const payment = document.querySelector('input[name="paymentMethod"]:checked')?.value || 'Cash on Delivery';
+  const subtotal = cart.reduce((s,i) => s + i.price * i.qty, 0);
+  const rewards = Math.round(subtotal * 0.05);
+  const lines = cart.map((i,n) => `${n+1}. ${i.code} – ${i.name}\nQty: ${i.qty} × Rs. ${i.price.toLocaleString()} = Rs. ${(i.price*i.qty).toLocaleString()}`);
+
+  const message = `Hi PK Clothing! I want to place an order:\n\n${lines.join('\n\n')}\n\nSubtotal: Rs. ${subtotal.toLocaleString()}\nReward Points Earned (5%): Rs. ${rewards.toLocaleString()}\nPayment Method: ${payment}\n\nPlease confirm size/color and delivery charge.`;
+  window.open('https://wa.me/9779863997137?text=' + encodeURIComponent(message), '_blank');
+}
+
+function showCartToast(message) {
+  const toast = document.getElementById('cartToast');
+  if (!toast) return;
+  toast.textContent = message;
+  toast.classList.add('show');
+  clearTimeout(window.pkToastTimer);
+  window.pkToastTimer = setTimeout(() => toast.classList.remove('show'), 1600);
+}
+
+// ===== Product reviews + automatic product stars =====
+function getAllProductReviews() {
+  return JSON.parse(localStorage.getItem('pkClothingReviews') || '[]');
+}
+
+function getReviewsForProduct(code) {
+  return getAllProductReviews().filter(r => r.code === code || String(r.product || '').startsWith(code));
+}
+
+function updateProductRatings() {
+  document.querySelectorAll('[data-rating-for]').forEach(row => {
+    const code = row.getAttribute('data-rating-for');
+    const reviews = getReviewsForProduct(code);
+    const starsEl = row.querySelector('.product-rating-stars');
+    const countEl = row.querySelector('.product-rating-count');
+
+    if (!reviews.length) {
+      if (starsEl) starsEl.textContent = '☆☆☆☆☆';
+      if (countEl) countEl.textContent = 'No reviews yet';
+      return;
+    }
+
+    const avg = reviews.reduce((sum,r) => sum + Number(r.rating || 0), 0) / reviews.length;
+    const rounded = Math.round(avg);
+    if (starsEl) starsEl.textContent = '★'.repeat(rounded) + '☆'.repeat(5-rounded);
+    if (countEl) countEl.textContent = `${avg.toFixed(1)} (${reviews.length} review${reviews.length === 1 ? '' : 's'})`;
+  });
+}
+
+function renderModalProductReviews(code) {
+  const list = document.getElementById('modalReviewList');
+  if (!list) return;
+  const reviews = getReviewsForProduct(code).slice().reverse();
+  list.innerHTML = reviews.length ? reviews.map(r => `
+    <div class="mini-review">
+      <div><span class="mini-review-name">${escapeHtml(r.name)}</span>
+      <span class="mini-review-stars">${'★'.repeat(Number(r.rating)) + '☆'.repeat(5-Number(r.rating))}</span></div>
+      <div class="mini-review-text">${escapeHtml(r.comment)}</div>
+    </div>`).join('') : '<div class="empty-reviews">No reviews yet for this product.</div>';
+}
+
+function openProductReview(code, name) {
+  document.getElementById('modalProductCode').value = code;
+  document.getElementById('modalProductFullName').value = `${code} – ${name}`;
+  document.getElementById('modalProductName').textContent = `${code} – ${name}`;
+  renderModalProductReviews(code);
+  document.getElementById('productReviewModal').classList.add('open');
+}
+
+function closeProductReview() {
+  document.getElementById('productReviewModal')?.classList.remove('open');
+}
+
+const modalVideoInput2 = document.getElementById('modalReviewVideo');
+const modalVideoPreview2 = document.getElementById('modalReviewVideoPreview');
+if (modalVideoInput2) {
+  modalVideoInput2.addEventListener('change', function() {
+    const file = this.files?.[0];
+    if (!file) return;
+    modalVideoPreview2.src = URL.createObjectURL(file);
+    modalVideoPreview2.style.display = 'block';
+  });
+}
+
+const productReviewForm2 = document.getElementById('productReviewForm');
+if (productReviewForm2) {
+  productReviewForm2.addEventListener('submit', function(e) {
+    e.preventDefault();
+    const code = document.getElementById('modalProductCode').value;
+    const rating = document.querySelector('input[name="modalRating"]:checked');
+    const review = {
+      code,
+      product: document.getElementById('modalProductFullName').value,
+      name: document.getElementById('modalReviewName').value.trim(),
+      rating: rating?.value || '',
+      comment: document.getElementById('modalReviewComment').value.trim(),
+      hadVideo: Boolean(modalVideoInput2?.files?.[0]),
+      createdAt: new Date().toISOString()
+    };
+    const reviews = getAllProductReviews();
+    reviews.push(review);
+    localStorage.setItem('pkClothingReviews', JSON.stringify(reviews));
+    updateProductRatings();
+    renderModalProductReviews(code);
+    renderReviews();
+    productReviewForm2.reset();
+    if (modalVideoPreview2) {
+      modalVideoPreview2.removeAttribute('src');
+      modalVideoPreview2.style.display = 'none';
+    }
+    alert('Thank you! Your review has been added.');
+  });
+}
+
+// Keep card stars synced with reviews saved by the general review form too.
+document.getElementById('reviewForm')?.addEventListener('submit', () => setTimeout(updateProductRatings, 0));
+
+pkSupabase.auth.onAuthStateChange((_event, session) => {
+  currentSupabaseUser = session?.user || null;
+});
+
+document.getElementById('accountModal')?.addEventListener('click', e => {
+  if (e.target.id === 'accountModal') closeAccount();
+});
+document.getElementById('productReviewModal')?.addEventListener('click', e => {
+  if (e.target.id === 'productReviewModal') closeProductReview();
+});
+
+renderCart();
+toggleEsewaNote();
+updateProductRatings();
+
+
+function openSignIn() {
+  document.getElementById('accountModal').classList.add('open');
+  document.getElementById('accountModal').setAttribute('aria-hidden','false');
+  showRewardLogin();
+}
 
 </script>
 
