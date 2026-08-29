@@ -3007,6 +3007,22 @@
   .checkout-card,.admin-orders-card{padding:24px 18px;margin:10px auto}
 }
 
+
+    .session-restoring {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: #f7f7f5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      letter-spacing: 1px;
+    }
+    .session-restoring.hidden {
+      display: none;
+    }
+
 </style>
 
   <script type="application/ld+json">
@@ -3025,6 +3041,8 @@
 </head>
 
 <body class="auth-locked">
+<div class="session-restoring" id="sessionRestoring">PK CLOTHING</div>
+
 
 <div class="admin-orders-modal" id="adminOrdersModal" aria-hidden="true">
   <div class="admin-orders-card">
@@ -4132,7 +4150,18 @@ renderReviews();
 // ===== Supabase authentication =====
 const SUPABASE_URL = 'https://czhgeqrrobvxphwzdbii.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_ATqZhQCB9qZJFwNy2dBFpw_JudmKHj3';
-const pkSupabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+const pkSupabase = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_PUBLISHABLE_KEY,
+  {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: true,
+      storage: window.localStorage
+    }
+  }
+);
 
 let authMode = 'login';
 let currentSupabaseUser = null;
@@ -4883,12 +4912,14 @@ async function loginWithPassword() {
 
 function unlockWebsite(user) {
   currentSupabaseUser = user || null;
+  document.getElementById('sessionRestoring')?.classList.add('hidden');
   updateAccountHeader(currentSupabaseUser);
   document.body.classList.remove('auth-locked');
   document.getElementById('authGate')?.classList.add('hidden');
 }
 
 function lockWebsite() {
+  document.getElementById('sessionRestoring')?.classList.add('hidden');
   updateAccountHeader(null);
   document.body.classList.add('auth-locked');
   document.getElementById('authGate')?.classList.remove('hidden');
@@ -4899,11 +4930,34 @@ function lockWebsite() {
 }
 
 async function initializeAuthGate() {
-  const { data } = await pkSupabase.auth.getSession();
+  // Keep customers logged in after normal page refreshes.
+  try {
+    const { data: sessionData, error: sessionError } =
+      await pkSupabase.auth.getSession();
 
-  if (data.session?.user && !signupFlowInProgress) {
-    unlockWebsite(data.session.user);
-  } else {
+    if (sessionError) {
+      console.warn('Session restore error:', sessionError.message);
+    }
+
+    let user = sessionData?.session?.user || null;
+
+    // Validate/refresh the restored user when a session exists.
+    if (sessionData?.session) {
+      const { data: userData, error: userError } =
+        await pkSupabase.auth.getUser();
+
+      if (!userError && userData?.user) {
+        user = userData.user;
+      }
+    }
+
+    if (user && !signupFlowInProgress) {
+      unlockWebsite(user);
+    } else {
+      lockWebsite();
+    }
+  } catch (error) {
+    console.warn('Auth restore failed:', error);
     lockWebsite();
   }
 }
@@ -4916,17 +4970,27 @@ async function logoutSupabaseAccount() {
   lockWebsite();
 }
 
-// verifyOtp fires SIGNED_IN. Do not unlock during signup.
+// INITIAL_SESSION is fired when Supabase restores a saved login on refresh.
+// Do not treat it as a logout.
 pkSupabase.auth.onAuthStateChange((event, session) => {
   currentSupabaseUser = session?.user || null;
 
-  if (event === 'SIGNED_OUT') {
-    if (!signupFlowInProgress) lockWebsite();
+  if (
+    (event === 'INITIAL_SESSION' ||
+     event === 'SIGNED_IN' ||
+     event === 'TOKEN_REFRESHED' ||
+     event === 'USER_UPDATED') &&
+    session?.user &&
+    !signupFlowInProgress
+  ) {
+    unlockWebsite(session.user);
     return;
   }
 
-  if (event === 'SIGNED_IN' && session?.user && !signupFlowInProgress) {
-    unlockWebsite(session.user);
+  if (event === 'SIGNED_OUT') {
+    if (!signupFlowInProgress) {
+      lockWebsite();
+    }
   }
 });
 
