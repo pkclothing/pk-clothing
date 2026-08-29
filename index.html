@@ -2478,6 +2478,40 @@
       }
     }
 
+
+    /* FIX: visible small round My Account button directly after WhatsApp */
+    #accountHeaderButton {
+      order: 999 !important;
+      width: 40px !important;
+      height: 40px !important;
+      min-width: 40px !important;
+      padding: 0 !important;
+      border-radius: 50% !important;
+      border: 1px solid #111 !important;
+      background: #fff !important;
+      color: #111 !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      flex: 0 0 40px !important;
+      font-size: 18px !important;
+      line-height: 1 !important;
+      visibility: visible !important;
+      opacity: 1 !important;
+      cursor: pointer;
+    }
+    #accountHeaderButton #accountHeaderName {
+      display: none !important;
+    }
+    @media(max-width:650px){
+      #accountHeaderButton{
+        width:36px !important;
+        height:36px !important;
+        min-width:36px !important;
+        flex-basis:36px !important;
+      }
+    }
+
 </style>
 
   <script type="application/ld+json">
@@ -2600,6 +2634,9 @@
          target="_blank">
         WhatsApp
       </a>
+      <button class="account-button" id="accountHeaderButton" type="button" onclick="openAccount()" aria-label="My Account" title="My Account">
+        👤<span id="accountHeaderName">My Account</span>
+      </button>
     </div>
 
   </div>
