@@ -2512,6 +2512,242 @@
       }
     }
 
+
+    /* ===== Product detail / size / stock system ===== */
+    .stock-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 9px;
+      padding: 7px 10px;
+      border-radius: 999px;
+      background: #f2fff4;
+      color: #15803d;
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .view-product-btn {
+      width: 100%;
+      border: 1px solid #111;
+      background: #fff;
+      color: #111;
+      padding: 11px 14px;
+      border-radius: 10px;
+      margin-top: 10px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .product-image.clickable {
+      cursor: pointer;
+    }
+
+    .product-detail-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 6500;
+      background: rgba(0,0,0,.6);
+      padding: 20px;
+      overflow-y: auto;
+    }
+
+    .product-detail-modal.open {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .product-detail-card {
+      width: min(920px, 100%);
+      background: #fff;
+      border-radius: 22px;
+      overflow: hidden;
+      position: relative;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      max-height: 92vh;
+    }
+
+    .product-detail-close {
+      position: absolute;
+      right: 14px;
+      top: 12px;
+      width: 38px;
+      height: 38px;
+      border: 0;
+      border-radius: 50%;
+      background: rgba(255,255,255,.95);
+      font-size: 27px;
+      line-height: 1;
+      cursor: pointer;
+      z-index: 3;
+    }
+
+    .product-detail-gallery {
+      background: #f4f4f2;
+      min-height: 560px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .product-detail-gallery img {
+      width: 100%;
+      height: 100%;
+      max-height: 680px;
+      object-fit: cover;
+    }
+
+    .product-detail-info {
+      padding: 38px 32px;
+      overflow-y: auto;
+    }
+
+    .product-detail-code {
+      color: #888;
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 1px;
+    }
+
+    .product-detail-info h2 {
+      font-size: 34px;
+      margin: 8px 0 10px;
+    }
+
+    .product-detail-price {
+      font-size: 30px;
+      font-weight: 900;
+      margin-bottom: 9px;
+    }
+
+    .product-detail-description {
+      color: #555;
+      line-height: 1.7;
+      margin: 16px 0 20px;
+    }
+
+    .size-title,
+    .qty-title {
+      font-size: 13px;
+      font-weight: 900;
+      margin-bottom: 8px;
+    }
+
+    .size-options {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+
+    .size-option {
+      min-width: 48px;
+      padding: 10px 12px;
+      border: 1px solid #ccc;
+      border-radius: 9px;
+      background: #fff;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .size-option.selected {
+      background: #111;
+      color: #fff;
+      border-color: #111;
+    }
+
+    .detail-qty-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .detail-qty-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: 9px;
+      border: 1px solid #ccc;
+      background: #fff;
+      font-size: 20px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .detail-qty-value {
+      min-width: 36px;
+      text-align: center;
+      font-weight: 900;
+    }
+
+    .detail-add-btn {
+      width: 100%;
+      border: 0;
+      border-radius: 11px;
+      background: #111;
+      color: #fff;
+      padding: 14px 16px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .detail-wa-btn {
+      width: 100%;
+      border: 0;
+      border-radius: 11px;
+      background: var(--green);
+      color: #fff;
+      padding: 13px 16px;
+      font-weight: 900;
+      cursor: pointer;
+      margin-top: 9px;
+    }
+
+    .detail-error {
+      min-height: 19px;
+      color: #b42318;
+      font-size: 12px;
+      margin: 8px 0;
+    }
+
+    .detail-reward {
+      margin-top: 12px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: #f7f7f5;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    @media(max-width: 760px) {
+      .product-detail-modal {
+        padding: 10px;
+        align-items: flex-start;
+      }
+
+      .product-detail-card {
+        grid-template-columns: 1fr;
+        max-height: none;
+        margin: 10px 0;
+      }
+
+      .product-detail-gallery {
+        min-height: 390px;
+      }
+
+      .product-detail-info {
+        padding: 26px 20px;
+      }
+
+      .product-detail-info h2 {
+        font-size: 28px;
+      }
+    }
+
 </style>
 
   <script type="application/ld+json">
@@ -2742,7 +2978,7 @@
   <div class="product-grid" id="new-arrivals">
 
     <article class="product-card">
-      <div class="product-image">
+      <div class="product-image clickable" onclick="openProductDetail('PK003')">
         <span class="badge">NEW</span>
         <img src="product_white_front.jpg" alt="White blue embroidered kurti by PK Clothing Nepal">
       </div>
@@ -2765,6 +3001,8 @@
         <div class="product-reward">
           🎁 Earn approx. Rs. 45 in reward points
         </div>
+        <div class="stock-pill">● In Stock</div>
+        <div class="stock-pill">● In Stock</div>
 
 
         <div class="meta">
@@ -2775,9 +3013,9 @@
           onclick="order('PK003','White Blue Embroidered Kurti','Rs. 900')">
           ORDER ON WHATSAPP
         </button>
-        <button class="add-cart-btn" type="button"
-          onclick="addToCart('PK003','White Blue Embroidered Kurti',900,'product_white_front.jpg')">
-          🛒 ADD TO CART
+        <button class="view-product-btn" type="button"
+          onclick="openProductDetail('PK003')">
+          VIEW PRODUCT • CHOOSE SIZE
         </button>
         <button class="product-review-btn" type="button"
           onclick="openProductReview('PK003','White Blue Embroidered Kurti')">
@@ -2787,7 +3025,7 @@
     </article>
 
     <article class="product-card">
-      <div class="product-image">
+      <div class="product-image clickable" onclick="openProductDetail('PK004')">
         <span class="badge">POPULAR</span>
         <img src="product_white_floral.jpg" alt="White floral kurti by PK Clothing Nepal">
       </div>
@@ -2810,6 +3048,7 @@
         <div class="product-reward">
           🎁 Earn approx. Rs. 60 in reward points
         </div>
+        <div class="stock-pill">● In Stock</div>
 
 
         <div class="meta">
@@ -2820,9 +3059,9 @@
           onclick="order('PK004','White Floral Kurti','Rs. 1,200')">
           ORDER ON WHATSAPP
         </button>
-        <button class="add-cart-btn" type="button"
-          onclick="addToCart('PK004','White Floral Kurti',1200,'product_white_floral.jpg')">
-          🛒 ADD TO CART
+        <button class="view-product-btn" type="button"
+          onclick="openProductDetail('PK004')">
+          VIEW PRODUCT • CHOOSE SIZE
         </button>
         <button class="product-review-btn" type="button"
           onclick="openProductReview('PK004','White Floral Kurti')">
@@ -2832,7 +3071,7 @@
     </article>
 
     <article class="product-card">
-      <div class="product-image">
+      <div class="product-image clickable" onclick="openProductDetail('PK005')">
         <span class="badge">ONLY 700</span>
         <img src="product_black_floral.jpg" alt="Black floral kurti by PK Clothing Nepal">
       </div>
@@ -2855,6 +3094,7 @@
         <div class="product-reward">
           🎁 Earn approx. Rs. 35 in reward points
         </div>
+        <div class="stock-pill">● In Stock</div>
 
 
         <div class="meta">
@@ -2865,9 +3105,9 @@
           onclick="order('PK005','Black Floral Kurti','Rs. 700')">
           ORDER ON WHATSAPP
         </button>
-        <button class="add-cart-btn" type="button"
-          onclick="addToCart('PK005','Black Floral Kurti',700,'product_black_floral.jpg')">
-          🛒 ADD TO CART
+        <button class="view-product-btn" type="button"
+          onclick="openProductDetail('PK005')">
+          VIEW PRODUCT • CHOOSE SIZE
         </button>
         <button class="product-review-btn" type="button"
           onclick="openProductReview('PK005','Black Floral Kurti')">
@@ -2877,7 +3117,7 @@
     </article>
 
     <article class="product-card">
-      <div class="product-image">
+      <div class="product-image clickable" onclick="openProductDetail('PK006')">
         <span class="badge">NEW</span>
         <img src="product_pink.jpg" alt="Pink embroidered kurti by PK Clothing Nepal">
       </div>
@@ -2910,9 +3150,9 @@
           onclick="order('PK006','Pink Embroidered Kurti','Rs. 900')">
           ORDER ON WHATSAPP
         </button>
-        <button class="add-cart-btn" type="button"
-          onclick="addToCart('PK006','Pink Embroidered Kurti',900,'product_pink.jpg')">
-          🛒 ADD TO CART
+        <button class="view-product-btn" type="button"
+          onclick="openProductDetail('PK006')">
+          VIEW PRODUCT • CHOOSE SIZE
         </button>
         <button class="product-review-btn" type="button"
           onclick="openProductReview('PK006','Pink Embroidered Kurti')">
@@ -3296,6 +3536,49 @@
 </aside>
 
 <div class="cart-toast" id="cartToast">Added to cart</div>
+
+
+<div class="product-detail-modal" id="productDetailModal" aria-hidden="true">
+  <div class="product-detail-card">
+    <button class="product-detail-close" type="button" onclick="closeProductDetail()">×</button>
+
+    <div class="product-detail-gallery">
+      <img id="detailProductImage" src="" alt="">
+    </div>
+
+    <div class="product-detail-info">
+      <div class="product-detail-code" id="detailProductCode"></div>
+      <h2 id="detailProductName"></h2>
+      <div class="product-detail-price" id="detailProductPrice"></div>
+
+      <div class="stock-pill" id="detailStock">● In Stock</div>
+
+      <div class="detail-reward" id="detailReward"></div>
+
+      <div class="product-detail-description" id="detailDescription"></div>
+
+      <div class="size-title">Choose Size</div>
+      <div class="size-options" id="detailSizeOptions"></div>
+
+      <div class="qty-title">Quantity</div>
+      <div class="detail-qty-row">
+        <button class="detail-qty-btn" type="button" onclick="changeDetailQty(-1)">−</button>
+        <div class="detail-qty-value" id="detailQty">1</div>
+        <button class="detail-qty-btn" type="button" onclick="changeDetailQty(1)">+</button>
+      </div>
+
+      <div class="detail-error" id="detailError"></div>
+
+      <button class="detail-add-btn" type="button" onclick="addSelectedProductToCart()">
+        🛒 ADD TO CART
+      </button>
+
+      <button class="detail-wa-btn" type="button" onclick="orderSelectedProductOnWhatsApp()">
+        ORDER ON WHATSAPP
+      </button>
+    </div>
+  </div>
+</div>
 
 <div class="review-modal" id="productReviewModal" aria-hidden="true">
   <div class="review-modal-card">
@@ -3820,26 +4103,48 @@ function saveCart(cart) {
   renderCart();
 }
 
-function addToCart(code, name, price, image) {
+function addToCart(code, name, price, image, size = '', qty = 1) {
   const cart = getCart();
-  const item = cart.find(i => i.code === code);
-  if (item) item.qty += 1;
-  else cart.push({ code, name, price, image, qty: 1 });
+  const key = `${code}__${size || 'NOSIZE'}`;
+  const item = cart.find(i => (i.key || `${i.code}__${i.size || 'NOSIZE'}`) === key);
+
+  if (item) {
+    item.qty += Number(qty || 1);
+  } else {
+    cart.push({
+      key,
+      code,
+      name,
+      price,
+      image,
+      size,
+      qty: Number(qty || 1)
+    });
+  }
+
   saveCart(cart);
-  showCartToast(`${name} added to cart`);
+  showCartToast(`${name}${size ? ' • Size ' + size : ''} added to cart`);
 }
 
-function changeQty(code, delta) {
+function changeQty(key, delta) {
   const cart = getCart();
-  const item = cart.find(i => i.code === code);
+  const item = cart.find(i => (i.key || `${i.code}__${i.size || 'NOSIZE'}`) === key);
   if (!item) return;
+
   item.qty += delta;
-  if (item.qty <= 0) cart.splice(cart.findIndex(i => i.code === code), 1);
+
+  if (item.qty <= 0) {
+    const index = cart.findIndex(i => (i.key || `${i.code}__${i.size || 'NOSIZE'}`) === key);
+    cart.splice(index, 1);
+  }
+
   saveCart(cart);
 }
 
-function removeFromCart(code) {
-  saveCart(getCart().filter(i => i.code !== code));
+function removeFromCart(key) {
+  saveCart(
+    getCart().filter(i => (i.key || `${i.code}__${i.size || 'NOSIZE'}`) !== key)
+  );
 }
 
 function renderCart() {
@@ -3868,13 +4173,13 @@ function renderCart() {
       <img src="${escapeHtml(item.image)}" alt="${escapeHtml(item.name)}">
       <div>
         <div class="cart-item-name">${escapeHtml(item.name)}</div>
-        <div class="cart-item-code">${escapeHtml(item.code)}</div>
+        <div class="cart-item-code">${escapeHtml(item.code)}${item.size ? ' • Size ' + escapeHtml(item.size) : ''}</div>
         <div class="cart-item-price">Rs. ${(item.price * item.qty).toLocaleString()}</div>
         <div class="qty-row">
-          <button class="qty-btn" onclick="changeQty('${item.code}',-1)">−</button>
+          <button class="qty-btn" onclick="changeQty('${item.key || `${item.code}__${item.size || 'NOSIZE'}`}',-1)">−</button>
           <strong>${item.qty}</strong>
-          <button class="qty-btn" onclick="changeQty('${item.code}',1)">+</button>
-          <button class="remove-cart" onclick="removeFromCart('${item.code}')">Remove</button>
+          <button class="qty-btn" onclick="changeQty('${item.key || `${item.code}__${item.size || 'NOSIZE'}`}',1)">+</button>
+          <button class="remove-cart" onclick="removeFromCart('${item.key || `${item.code}__${item.size || 'NOSIZE'}`}')">Remove</button>
         </div>
       </div>
     </div>`).join('');
@@ -4446,6 +4751,116 @@ pkSupabase.auth.onAuthStateChange((_event, session) => {
   pkUpdateAdminButton(user);
   if (user) await pkRecordPageVisitOnce();
 })();
+
+
+// ===== Product detail / size / stock =====
+const PK_PRODUCTS = {'PK003': {'name': 'White Blue Embroidered Kurti', 'price': 900, 'image': 'product_white_front.jpg', 'description': 'White kurti with blue embroidery and 3/4 sleeves.', 'sizes': ['M', 'L', 'XL', '2XL', '3XL'], 'stock': 'In Stock'}, 'PK004': {'name': 'White Floral Kurti', 'price': 1200, 'image': 'product_white_floral.jpg', 'description': 'White floral kurti designed for casual and everyday wear.', 'sizes': ['M', 'L', 'XL', '2XL', '3XL'], 'stock': 'In Stock'}, 'PK005': {'name': 'Black Floral Kurti', 'price': 700, 'image': 'product_black_floral.jpg', 'description': 'Black floral kurti with a bold printed design.', 'sizes': ['M', 'L', 'XL', '2XL', '3XL'], 'stock': 'In Stock'}, 'PK006': {'name': 'Pink Embroidered Kurti', 'price': 900, 'image': 'product_pink.jpg', 'description': 'Pink kurti with decorative neckline and 3/4 sleeves.', 'sizes': ['M', 'L', 'XL', '2XL', '3XL'], 'stock': 'In Stock'}};
+
+let currentDetailCode = null;
+let currentDetailSize = '';
+let currentDetailQty = 1;
+
+function openProductDetail(code) {
+  const product = PK_PRODUCTS[code];
+  if (!product) return;
+
+  currentDetailCode = code;
+  currentDetailSize = '';
+  currentDetailQty = 1;
+
+  document.getElementById('detailProductImage').src = product.image;
+  document.getElementById('detailProductImage').alt = product.name;
+  document.getElementById('detailProductCode').textContent = code;
+  document.getElementById('detailProductName').textContent = product.name;
+  document.getElementById('detailProductPrice').textContent = `Rs. ${Number(product.price).toLocaleString()}`;
+  document.getElementById('detailStock').textContent = `● ${product.stock}`;
+  document.getElementById('detailReward').textContent =
+    `🎁 Earn approx. Rs. ${Math.round(product.price * 0.05)} in reward points`;
+  document.getElementById('detailDescription').textContent = product.description;
+  document.getElementById('detailQty').textContent = '1';
+  document.getElementById('detailError').textContent = '';
+
+  const sizeBox = document.getElementById('detailSizeOptions');
+  sizeBox.innerHTML = product.sizes.map(size => `
+    <button class="size-option" type="button" onclick="selectDetailSize('${size}', this)">
+      ${size}
+    </button>
+  `).join('');
+
+  const modal = document.getElementById('productDetailModal');
+  modal.classList.add('open');
+  modal.setAttribute('aria-hidden','false');
+
+  if (typeof pkTrackVisit === 'function') {
+    pkTrackVisit('product_view', { product_code: code });
+  }
+}
+
+function closeProductDetail() {
+  const modal = document.getElementById('productDetailModal');
+  modal.classList.remove('open');
+  modal.setAttribute('aria-hidden','true');
+}
+
+function selectDetailSize(size, button) {
+  currentDetailSize = size;
+  document.querySelectorAll('#detailSizeOptions .size-option')
+    .forEach(btn => btn.classList.remove('selected'));
+  button.classList.add('selected');
+  document.getElementById('detailError').textContent = '';
+}
+
+function changeDetailQty(delta) {
+  currentDetailQty = Math.max(1, Math.min(10, currentDetailQty + delta));
+  document.getElementById('detailQty').textContent = currentDetailQty;
+}
+
+function addSelectedProductToCart() {
+  const product = PK_PRODUCTS[currentDetailCode];
+  if (!product) return;
+
+  if (!currentDetailSize) {
+    document.getElementById('detailError').textContent = 'Please choose a size before adding to cart.';
+    return;
+  }
+
+  addToCart(
+    currentDetailCode,
+    product.name,
+    product.price,
+    product.image,
+    currentDetailSize,
+    currentDetailQty
+  );
+
+  closeProductDetail();
+}
+
+function orderSelectedProductOnWhatsApp() {
+  const product = PK_PRODUCTS[currentDetailCode];
+  if (!product) return;
+
+  if (!currentDetailSize) {
+    document.getElementById('detailError').textContent = 'Please choose a size before ordering.';
+    return;
+  }
+
+  const total = product.price * currentDetailQty;
+  const message =
+    `Hi PK Clothing! I want to order ${currentDetailCode} – ${product.name}.` +
+    `\nSize: ${currentDetailSize}` +
+    `\nQuantity: ${currentDetailQty}` +
+    `\nTotal: Rs. ${total.toLocaleString()}`;
+
+  window.open(
+    'https://wa.me/9779863997137?text=' + encodeURIComponent(message),
+    '_blank'
+  );
+}
+
+document.getElementById('productDetailModal')?.addEventListener('click', function(e) {
+  if (e.target.id === 'productDetailModal') closeProductDetail();
+});
 
 </script>
 
