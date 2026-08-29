@@ -2221,7 +2221,127 @@
         grid-template-columns: 1fr;
       }
     }
-  </style>
+  
+    /* ===== PK Clothing private visitor dashboard ===== */
+    .admin-button {
+      display: none;
+      border: 1px solid #000;
+      background: #111;
+      color: #fff;
+      padding: 10px 14px;
+      border-radius: 999px;
+      font-weight: 900;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .visitor-admin-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 8000;
+      background: rgba(0,0,0,.6);
+      padding: 18px;
+      overflow-y: auto;
+    }
+
+    .visitor-admin-modal.open {
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+    }
+
+    .visitor-admin-card {
+      width: min(980px, 100%);
+      margin: 30px auto;
+      background: #fff;
+      border-radius: 22px;
+      padding: 26px;
+      position: relative;
+      box-shadow: 0 28px 80px rgba(0,0,0,.2);
+    }
+
+    .visitor-admin-close {
+      position: absolute;
+      right: 16px;
+      top: 12px;
+      border: 0;
+      background: transparent;
+      font-size: 30px;
+      cursor: pointer;
+    }
+
+    .visitor-admin-card h3 {
+      margin: 0 0 5px;
+      font-size: 30px;
+    }
+
+    .visitor-admin-sub {
+      color: #777;
+      font-size: 13px;
+      margin-bottom: 18px;
+    }
+
+    .visitor-admin-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .visitor-admin-stat {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 16px;
+    }
+
+    .visitor-admin-stat small {
+      display: block;
+      color: #777;
+      margin-bottom: 5px;
+    }
+
+    .visitor-admin-stat strong {
+      font-size: 25px;
+    }
+
+    .visitor-refresh {
+      border: 0;
+      border-radius: 10px;
+      background: #000;
+      color: #fff;
+      padding: 10px 14px;
+      font-weight: 900;
+      cursor: pointer;
+      margin-bottom: 10px;
+    }
+
+    .visitor-row {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr .9fr;
+      gap: 12px;
+      align-items: center;
+      padding: 13px 0;
+      border-top: 1px solid var(--line);
+      font-size: 13px;
+    }
+
+    .visitor-email {
+      font-weight: 900;
+      word-break: break-word;
+    }
+
+    .visitor-muted {
+      color: #777;
+      margin-top: 3px;
+    }
+
+    @media(max-width:700px) {
+      .visitor-admin-stats { grid-template-columns: 1fr; }
+      .visitor-row { grid-template-columns: 1fr; }
+    }
+
+</style>
 
   <script type="application/ld+json">
   {
@@ -2332,6 +2452,9 @@
     <div style="display:flex;align-items:center;gap:10px;">
       <button class="account-button" type="button" onclick="openAccount()">
         👤 My Rewards
+      </button>
+      <button class="admin-button" id="pkAdminButton" type="button" onclick="openVisitorAdmin()">
+        📊 Admin
       </button>
       <button class="account-button" type="button" onclick="openSignIn()">
         Sign In
@@ -2777,6 +2900,41 @@
 
 
 
+
+
+<div class="visitor-admin-modal" id="visitorAdminModal" aria-hidden="true">
+  <div class="visitor-admin-card">
+    <button class="visitor-admin-close" type="button" onclick="closeVisitorAdmin()">×</button>
+
+    <h3>PK Clothing Visitors</h3>
+    <div class="visitor-admin-sub">
+      Logged-in customer activity. Only the PK Clothing admin account can read this information.
+    </div>
+
+    <div class="visitor-admin-stats">
+      <div class="visitor-admin-stat">
+        <small>Visits Today</small>
+        <strong id="visitorVisitsToday">0</strong>
+      </div>
+
+      <div class="visitor-admin-stat">
+        <small>Unique Visitors Today</small>
+        <strong id="visitorUniqueToday">0</strong>
+      </div>
+
+      <div class="visitor-admin-stat">
+        <small>Recent Records</small>
+        <strong id="visitorRecentTotal">0</strong>
+      </div>
+    </div>
+
+    <button class="visitor-refresh" type="button" onclick="loadVisitorAdmin()">REFRESH</button>
+
+    <div id="visitorAdminList">
+      <div class="empty-reviews">No visitor activity yet.</div>
+    </div>
+  </div>
+</div>
 
 <div class="account-modal" id="accountModal" aria-hidden="true">
   <div class="account-card">
@@ -3758,6 +3916,167 @@ document.addEventListener('click', function(event) {
     dropdown.classList.remove('open');
   }
 });
+
+
+// ===== PK Clothing visitor tracking =====
+const PK_VISITOR_ADMIN_EMAIL = 'pkclothing414@gmail.com';
+let pkVisitRecordedForSession = false;
+
+function pkIsVisitorAdmin(user) {
+  return Boolean(user?.email && user.email.toLowerCase() === PK_VISITOR_ADMIN_EMAIL.toLowerCase());
+}
+
+function pkUpdateAdminButton(user) {
+  const button = document.getElementById('pkAdminButton');
+  if (!button) return;
+  button.style.display = pkIsVisitorAdmin(user) ? 'inline-flex' : 'none';
+}
+
+async function pkTrackVisit(activityType = 'page_view', details = {}) {
+  try {
+    const { data: userData } = await pkSupabase.auth.getUser();
+    const user = userData?.user;
+    if (!user) return;
+
+    const { error } = await pkSupabase.from('site_visits').insert({
+      user_id: user.id,
+      email: user.email || null,
+      activity_type: activityType,
+      page_path: window.location.pathname + window.location.hash,
+      product_code: details.product_code || null,
+      category: details.category || null
+    });
+
+    if (error) console.warn('Visit tracking:', error.message);
+  } catch (error) {
+    console.warn('Visit tracking unavailable:', error);
+  }
+}
+
+async function pkRecordPageVisitOnce() {
+  if (pkVisitRecordedForSession) return;
+  pkVisitRecordedForSession = true;
+  await pkTrackVisit('page_view');
+}
+
+async function openVisitorAdmin() {
+  const { data } = await pkSupabase.auth.getUser();
+  const user = data?.user;
+
+  if (!pkIsVisitorAdmin(user)) {
+    alert('Admin access only.');
+    return;
+  }
+
+  const modal = document.getElementById('visitorAdminModal');
+  modal.classList.add('open');
+  modal.setAttribute('aria-hidden', 'false');
+  await loadVisitorAdmin();
+}
+
+function closeVisitorAdmin() {
+  const modal = document.getElementById('visitorAdminModal');
+  modal.classList.remove('open');
+  modal.setAttribute('aria-hidden', 'true');
+}
+
+async function loadVisitorAdmin() {
+  const { data: userData } = await pkSupabase.auth.getUser();
+  if (!pkIsVisitorAdmin(userData?.user)) return;
+
+  const start = new Date();
+  start.setHours(0,0,0,0);
+
+  const { data: recent, error } = await pkSupabase
+    .from('site_visits')
+    .select('email,activity_type,page_path,product_code,category,visited_at')
+    .order('visited_at', { ascending: false })
+    .limit(100);
+
+  if (error) {
+    document.getElementById('visitorAdminList').innerHTML =
+      `<div class="empty-reviews">Could not load visitor data: ${escapeHtml(error.message)}</div>`;
+    return;
+  }
+
+  const { data: todayRows, error: todayError } = await pkSupabase
+    .from('site_visits')
+    .select('email,visited_at')
+    .gte('visited_at', start.toISOString());
+
+  const today = todayError ? [] : (todayRows || []);
+  const unique = new Set(today.map(row => row.email).filter(Boolean)).size;
+
+  document.getElementById('visitorVisitsToday').textContent = today.length;
+  document.getElementById('visitorUniqueToday').textContent = unique;
+  document.getElementById('visitorRecentTotal').textContent = (recent || []).length;
+
+  const list = document.getElementById('visitorAdminList');
+
+  if (!recent?.length) {
+    list.innerHTML = '<div class="empty-reviews">No visitor activity yet.</div>';
+    return;
+  }
+
+  list.innerHTML = recent.map(row => {
+    const date = new Date(row.visited_at).toLocaleString();
+    const action = row.product_code
+      ? `Viewed product ${row.product_code}`
+      : row.category
+        ? `Viewed ${row.category}`
+        : row.activity_type.replaceAll('_', ' ');
+
+    return `
+      <div class="visitor-row">
+        <div>
+          <div class="visitor-email">${escapeHtml(row.email || 'Unknown')}</div>
+          <div class="visitor-muted">${escapeHtml(action)}</div>
+        </div>
+        <div>${escapeHtml(row.page_path || '/')}</div>
+        <div class="visitor-muted">${escapeHtml(date)}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+document.getElementById('visitorAdminModal')?.addEventListener('click', e => {
+  if (e.target.id === 'visitorAdminModal') closeVisitorAdmin();
+});
+
+document.addEventListener('click', e => {
+  const productCard = e.target.closest('.product-card');
+  if (productCard) {
+    const code = productCard.querySelector('.code')?.textContent?.trim() || '';
+    if (/^PK\d+/i.test(code)) {
+      pkTrackVisit('product_view', { product_code: code });
+    }
+  }
+
+  const link = e.target.closest('a');
+  const href = link?.getAttribute('href') || '';
+  if (href === '#tops') pkTrackVisit('category_view', { category: 'Tops' });
+  if (href === '#three-piece') pkTrackVisit('category_view', { category: '3-Pcs Kurta Sets' });
+  if (href === '#sarees') pkTrackVisit('category_view', { category: 'Sarees' });
+  if (href === '#men') pkTrackVisit('category_view', { category: 'Men' });
+});
+
+pkSupabase.auth.onAuthStateChange((_event, session) => {
+  const user = session?.user || null;
+  pkUpdateAdminButton(user);
+
+  if (user) {
+    setTimeout(pkRecordPageVisitOnce, 400);
+  } else {
+    pkVisitRecordedForSession = false;
+  }
+});
+
+(async () => {
+  const { data } = await pkSupabase.auth.getSession();
+  const user = data.session?.user || null;
+  pkUpdateAdminButton(user);
+  if (user) await pkRecordPageVisitOnce();
+})();
 
 </script>
 
