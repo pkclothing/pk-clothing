@@ -2166,6 +2166,7 @@
 
 <body class="auth-locked">
 
+
 <div class="auth-gate" id="authGate">
   <div class="auth-gate-card">
     <div class="auth-gate-brand">
@@ -2179,23 +2180,37 @@
       <button id="gateSignupTab" class="gate-tab" type="button" onclick="setGateMode('signup')">SIGN UP</button>
     </div>
 
-    <input id="gateEmail" class="gate-input" type="email" placeholder="Email address" autocomplete="email">
-    <input id="gatePassword" class="gate-input" type="password" placeholder="Password" minlength="6" autocomplete="current-password">
-
-    <button id="gateSubmitBtn" class="gate-primary" type="button" onclick="submitGateAuth()">LOG IN</button>
-    <div id="gateMessage" class="gate-message"></div>
-
-    <div id="verifyPanel" class="verify-panel">
-      <div class="verify-title">Enter verification code</div>
-      <div class="verify-help">
-        We sent a verification code to your email. Enter it below to verify your account.
-      </div>
-      <input id="gateOtp" class="gate-input" type="text" inputmode="numeric" placeholder="Verification code" maxlength="8">
-      <button class="gate-primary" type="button" onclick="verifySignupCode()">VERIFY EMAIL</button>
+    <div id="loginPanel">
+      <input id="loginEmail" class="gate-input" type="email" placeholder="Email address" autocomplete="email">
+      <input id="loginPassword" class="gate-input" type="password" placeholder="Password" autocomplete="current-password">
+      <button class="gate-primary" type="button" onclick="loginWithPassword()">LOG IN</button>
     </div>
+
+    <div id="signupPanel" style="display:none;">
+      <div id="signupEmailStep">
+        <input id="signupEmail" class="gate-input" type="email" placeholder="Email address" autocomplete="email">
+        <button class="gate-primary" type="button" onclick="sendSignupOtp()">SEND OTP</button>
+      </div>
+
+      <div id="signupOtpStep" style="display:none;">
+        <div class="verify-title">Enter OTP</div>
+        <div class="verify-help">We sent a one-time code to your email.</div>
+        <input id="signupOtp" class="gate-input" type="text" inputmode="numeric" placeholder="OTP code" maxlength="8">
+        <button class="gate-primary" type="button" onclick="verifySignupOtp()">VERIFY OTP</button>
+      </div>
+
+      <div id="signupPasswordStep" style="display:none;">
+        <div class="verify-title">Create your password</div>
+        <div class="verify-help">Your email is verified. Now choose your password.</div>
+        <input id="newPassword" class="gate-input" type="password" placeholder="Create password" minlength="6">
+        <input id="confirmNewPassword" class="gate-input" type="password" placeholder="Confirm password" minlength="6">
+        <button class="gate-primary" type="button" onclick="setSignupPassword()">CREATE ACCOUNT</button>
+      </div>
+    </div>
+
+    <div id="gateMessage" class="gate-message"></div>
   </div>
 </div>
-
 
 <div class="topbar">
   PK CLOTHING • MEN'S & WOMEN'S FASHION • NEPAL
@@ -3357,6 +3372,7 @@ function openSignIn() {
 }
 
 
+
 // ===== Full-site authentication gate =====
 let gateMode = 'login';
 let pendingSignupEmail = '';
@@ -3367,8 +3383,8 @@ function setGateMode(mode) {
   document.getElementById('gateLoginTab')?.classList.toggle('active', mode === 'login');
   document.getElementById('gateSignupTab')?.classList.toggle('active', mode === 'signup');
 
-  const button = document.getElementById('gateSubmitBtn');
-  if (button) button.textContent = mode === 'login' ? 'LOG IN' : 'CREATE ACCOUNT';
+  document.getElementById('loginPanel').style.display = mode === 'login' ? 'block' : 'none';
+  document.getElementById('signupPanel').style.display = mode === 'signup' ? 'block' : 'none';
 
   const msg = document.getElementById('gateMessage');
   if (msg) {
@@ -3376,52 +3392,21 @@ function setGateMode(mode) {
     msg.className = 'gate-message';
   }
 
-  document.getElementById('verifyPanel')?.classList.remove('show');
+  if (mode === 'signup') {
+    document.getElementById('signupEmailStep').style.display = 'block';
+    document.getElementById('signupOtpStep').style.display = 'none';
+    document.getElementById('signupPasswordStep').style.display = 'none';
+  }
 }
 
-async function submitGateAuth() {
-  const email = (document.getElementById('gateEmail')?.value || '').trim();
-  const password = document.getElementById('gatePassword')?.value || '';
+async function loginWithPassword() {
+  const email = (document.getElementById('loginEmail')?.value || '').trim();
+  const password = document.getElementById('loginPassword')?.value || '';
   const msg = document.getElementById('gateMessage');
 
   if (!email || !password) {
     msg.textContent = 'Enter your email and password.';
     msg.className = 'gate-message error';
-    return;
-  }
-
-  if (password.length < 6) {
-    msg.textContent = 'Password must be at least 6 characters.';
-    msg.className = 'gate-message error';
-    return;
-  }
-
-  if (gateMode === 'signup') {
-    msg.textContent = 'Creating your account…';
-    msg.className = 'gate-message';
-
-    const { data, error } = await pkSupabase.auth.signUp({
-      email,
-      password
-    });
-
-    if (error) {
-      msg.textContent = error.message;
-      msg.className = 'gate-message error';
-      return;
-    }
-
-    pendingSignupEmail = email;
-
-    // If email confirmation is disabled and Supabase creates a session immediately,
-    // sign out so the customer still follows the verify-then-login flow.
-    if (data.session) {
-      await pkSupabase.auth.signOut();
-    }
-
-    msg.textContent = 'Account created. Check your email for the verification code.';
-    msg.className = 'gate-message success';
-    document.getElementById('verifyPanel')?.classList.add('show');
     return;
   }
 
@@ -3439,27 +3424,58 @@ async function submitGateAuth() {
     return;
   }
 
-  if (data.session?.user) {
-    unlockWebsite(data.session.user);
-  }
+  if (data.session?.user) unlockWebsite(data.session.user);
 }
 
-async function verifySignupCode() {
-  const email = pendingSignupEmail || (document.getElementById('gateEmail')?.value || '').trim();
-  const token = (document.getElementById('gateOtp')?.value || '').trim();
+async function sendSignupOtp() {
+  const email = (document.getElementById('signupEmail')?.value || '').trim();
   const msg = document.getElementById('gateMessage');
 
-  if (!email || !token) {
-    msg.textContent = 'Enter the verification code from your email.';
+  if (!email) {
+    msg.textContent = 'Enter your email address.';
     msg.className = 'gate-message error';
     return;
   }
 
-  msg.textContent = 'Verifying email…';
+  msg.textContent = 'Sending OTP…';
   msg.className = 'gate-message';
 
-  const { error } = await pkSupabase.auth.verifyOtp({
+  const { error } = await pkSupabase.auth.signInWithOtp({
     email,
+    options: {
+      shouldCreateUser: true
+    }
+  });
+
+  if (error) {
+    msg.textContent = error.message;
+    msg.className = 'gate-message error';
+    return;
+  }
+
+  pendingSignupEmail = email;
+  msg.textContent = 'OTP sent. Check your email.';
+  msg.className = 'gate-message success';
+
+  document.getElementById('signupEmailStep').style.display = 'none';
+  document.getElementById('signupOtpStep').style.display = 'block';
+}
+
+async function verifySignupOtp() {
+  const token = (document.getElementById('signupOtp')?.value || '').trim();
+  const msg = document.getElementById('gateMessage');
+
+  if (!pendingSignupEmail || !token) {
+    msg.textContent = 'Enter the OTP from your email.';
+    msg.className = 'gate-message error';
+    return;
+  }
+
+  msg.textContent = 'Verifying OTP…';
+  msg.className = 'gate-message';
+
+  const { data, error } = await pkSupabase.auth.verifyOtp({
+    email: pendingSignupEmail,
     token,
     type: 'email'
   });
@@ -3470,15 +3486,59 @@ async function verifySignupCode() {
     return;
   }
 
-  // Requirement: verification first, then customer logs in normally.
+  if (!data.session?.user) {
+    msg.textContent = 'OTP verified, but no active session was created.';
+    msg.className = 'gate-message error';
+    return;
+  }
+
+  msg.textContent = 'Email verified. Now create your password.';
+  msg.className = 'gate-message success';
+
+  document.getElementById('signupOtpStep').style.display = 'none';
+  document.getElementById('signupPasswordStep').style.display = 'block';
+}
+
+async function setSignupPassword() {
+  const password = document.getElementById('newPassword')?.value || '';
+  const confirmPassword = document.getElementById('confirmNewPassword')?.value || '';
+  const msg = document.getElementById('gateMessage');
+
+  if (password.length < 6) {
+    msg.textContent = 'Password must be at least 6 characters.';
+    msg.className = 'gate-message error';
+    return;
+  }
+
+  if (password !== confirmPassword) {
+    msg.textContent = 'Passwords do not match.';
+    msg.className = 'gate-message error';
+    return;
+  }
+
+  msg.textContent = 'Creating account…';
+  msg.className = 'gate-message';
+
+  const { error } = await pkSupabase.auth.updateUser({
+    password
+  });
+
+  if (error) {
+    msg.textContent = error.message;
+    msg.className = 'gate-message error';
+    return;
+  }
+
   await pkSupabase.auth.signOut();
 
-  msg.textContent = 'Email verified successfully. Now log in with your email and password.';
+  msg.textContent = 'Account created successfully. Now log in.';
   msg.className = 'gate-message success';
-  document.getElementById('verifyPanel')?.classList.remove('show');
+
+  const loginEmail = document.getElementById('loginEmail');
+  if (loginEmail) loginEmail.value = pendingSignupEmail;
+
+  pendingSignupEmail = '';
   setGateMode('login');
-  document.getElementById('gateEmail').value = email;
-  document.getElementById('gatePassword').value = '';
 }
 
 function unlockWebsite(user) {
@@ -3495,15 +3555,10 @@ function lockWebsite() {
 
 async function initializeAuthGate() {
   const { data } = await pkSupabase.auth.getSession();
-
-  if (data.session?.user) {
-    unlockWebsite(data.session.user);
-  } else {
-    lockWebsite();
-  }
+  if (data.session?.user) unlockWebsite(data.session.user);
+  else lockWebsite();
 }
 
-// Replace logout behavior so logging out hides the store again.
 async function logoutSupabaseAccount() {
   await pkSupabase.auth.signOut();
   currentSupabaseUser = null;
@@ -3513,17 +3568,12 @@ async function logoutSupabaseAccount() {
 
 pkSupabase.auth.onAuthStateChange((event, session) => {
   currentSupabaseUser = session?.user || null;
-
-  if (event === 'SIGNED_OUT') {
-    lockWebsite();
-  }
-
-  if (event === 'SIGNED_IN' && session?.user) {
-    unlockWebsite(session.user);
-  }
+  if (event === 'SIGNED_OUT') lockWebsite();
+  if (event === 'SIGNED_IN' && session?.user) unlockWebsite(session.user);
 });
 
 initializeAuthGate();
+
 
 </script>
 
