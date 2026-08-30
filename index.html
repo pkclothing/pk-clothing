@@ -3014,6 +3014,14 @@
     #authGate { display: none !important; }
     #authGate.action-login-open { display: flex !important; }
 
+
+    #pkAdminButton,
+    #pkOrdersAdminButton {
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+    }
+
 </style>
 
   <script type="application/ld+json">
@@ -4907,6 +4915,14 @@ function unlockWebsite(user) {
   updateAccountHeader(currentSupabaseUser);
   document.body.classList.remove('auth-locked');
 
+  // Always refresh admin visibility after login/session restore.
+  if (typeof pkUpdateAdminButton === 'function') {
+    pkUpdateAdminButton(currentSupabaseUser);
+  }
+  if (typeof updateOrdersAdminButton === 'function') {
+    updateOrdersAdminButton(currentSupabaseUser);
+  }
+
   const gate = document.getElementById('authGate');
   gate?.classList.remove('action-login-open');
   gate?.classList.add('hidden');
@@ -4920,6 +4936,12 @@ function lockWebsite() {
   currentSupabaseUser = null;
   updateAccountHeader(null);
   document.body.classList.remove('auth-locked');
+
+  const visitorAdminBtn = document.getElementById('pkAdminButton');
+  if (visitorAdminBtn) visitorAdminBtn.style.display = 'none';
+
+  const ordersAdminBtn = document.getElementById('pkOrdersAdminButton');
+  if (ordersAdminBtn) ordersAdminBtn.style.display = 'none';
 
   const gate = document.getElementById('authGate');
   gate?.classList.remove('action-login-open');
@@ -5763,6 +5785,38 @@ window.addEventListener('DOMContentLoaded', () => {
   const gate = document.getElementById('authGate');
   if (!gate?.classList.contains('action-login-open')) {
     gate?.classList.add('hidden');
+  }
+});
+
+
+async function refreshPkAdminControls() {
+  try {
+    const { data } = await pkSupabase.auth.getSession();
+    const user = data?.session?.user || null;
+
+    if (typeof pkUpdateAdminButton === 'function') {
+      pkUpdateAdminButton(user);
+    }
+    if (typeof updateOrdersAdminButton === 'function') {
+      updateOrdersAdminButton(user);
+    }
+  } catch (error) {
+    console.warn('Admin visibility refresh failed:', error);
+  }
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  setTimeout(refreshPkAdminControls, 250);
+});
+
+pkSupabase.auth.onAuthStateChange((_event, session) => {
+  const user = session?.user || null;
+
+  if (typeof pkUpdateAdminButton === 'function') {
+    pkUpdateAdminButton(user);
+  }
+  if (typeof updateOrdersAdminButton === 'function') {
+    updateOrdersAdminButton(user);
   }
 });
 
