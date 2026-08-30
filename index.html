@@ -468,6 +468,7 @@
 
 
     .auth-gate {
+      display: none;
       position: fixed;
       inset: 0;
       z-index: 5000;
@@ -593,7 +594,7 @@
     }
 
     body.auth-locked > *:not(.auth-gate) {
-      visibility: hidden;
+      visibility: visible;
     }
 
     .auth-tabs {
@@ -3023,6 +3024,9 @@
       display: none;
     }
 
+
+    .auth-gate.action-login-open { display:flex !important; }
+
 </style>
 
   <script type="application/ld+json">
@@ -3040,7 +3044,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 
-<body class="auth-locked">
+<body>
 <div class="session-restoring" id="sessionRestoring">PK CLOTHING</div>
 
 
@@ -3155,7 +3159,9 @@
 
 
 <div class="auth-gate" id="authGate">
-  <div class="auth-gate-card">
+  <div class="auth-gate-card" style="position:relative;">
+      <button type="button" onclick="closeActionLogin()"
+        style="position:absolute;right:14px;top:10px;border:0;background:transparent;font-size:28px;cursor:pointer;">×</button>
     <div class="auth-gate-brand">
       <img src="pk-logo.jpg" alt="PK Clothing logo">
       <h1>PK Clothing</h1>
@@ -3262,7 +3268,7 @@
          target="_blank">
         WhatsApp
       </a>
-      <button class="account-button" id="accountHeaderButton" type="button" onclick="openAccount()" aria-label="My Account" title="My Account">
+      <button class="account-button" id="accountHeaderButton" type="button" onclick="openAccountSmart()" aria-label="My Account" title="My Account">
         👤<span id="accountHeaderName">My Account</span>
       </button>
     </div>
@@ -4915,47 +4921,28 @@ function unlockWebsite(user) {
   document.getElementById('sessionRestoring')?.classList.add('hidden');
   updateAccountHeader(currentSupabaseUser);
   document.body.classList.remove('auth-locked');
-  document.getElementById('authGate')?.classList.add('hidden');
+  const gate = document.getElementById('authGate');
+  gate?.classList.remove('action-login-open');
+  gate?.classList.add('hidden');
+  if (pendingProtectedAction) runPendingProtectedAction();
 }
 
 function lockWebsite() {
+  currentSupabaseUser = null;
   document.getElementById('sessionRestoring')?.classList.add('hidden');
   updateAccountHeader(null);
-  document.body.classList.add('auth-locked');
-  document.getElementById('authGate')?.classList.remove('hidden');
-
-  if (!signupFlowInProgress) {
-    setGateMode('login');
-  }
+  document.body.classList.remove('auth-locked');
+  const gate = document.getElementById('authGate');
+  gate?.classList.remove('action-login-open');
+  gate?.classList.add('hidden');
 }
 
 async function initializeAuthGate() {
-  // Keep customers logged in after normal page refreshes.
   try {
-    const { data: sessionData, error: sessionError } =
-      await pkSupabase.auth.getSession();
-
-    if (sessionError) {
-      console.warn('Session restore error:', sessionError.message);
-    }
-
-    let user = sessionData?.session?.user || null;
-
-    // Validate/refresh the restored user when a session exists.
-    if (sessionData?.session) {
-      const { data: userData, error: userError } =
-        await pkSupabase.auth.getUser();
-
-      if (!userError && userData?.user) {
-        user = userData.user;
-      }
-    }
-
-    if (user && !signupFlowInProgress) {
-      unlockWebsite(user);
-    } else {
-      lockWebsite();
-    }
+    const { data } = await pkSupabase.auth.getSession();
+    const user = data?.session?.user || null;
+    if (user && !signupFlowInProgress) unlockWebsite(user);
+    else lockWebsite();
   } catch (error) {
     console.warn('Auth restore failed:', error);
     lockWebsite();
@@ -5300,7 +5287,17 @@ function savePkWishlist(items) {
   renderAccountWishlist();
 }
 
-function toggleWishlist(code) {
+
+async function toggleWishlist(code) {
+  const { data } = await pkSupabase.auth.getSession();
+  if (!data.session?.user) {
+    openActionLogin(() => toggleWishlistLoggedIn(code));
+    return;
+  }
+  toggleWishlistLoggedIn(code);
+}
+
+function toggleWishlistLoggedIn(code) {
   const items = getPkWishlist();
   const index = items.indexOf(code);
 
@@ -5440,12 +5437,15 @@ async function openCheckoutForm() {
   const cart = getCart();
   if (!cart.length) return alert('Your cart is empty.');
 
-  const { data } = await pkSupabase.auth.getUser();
-  const user = data?.user;
-  if (!user) return alert('Please log in before checkout.');
+  const { data } = await pkSupabase.auth.getSession();
+  const user = data?.session?.user || null;
+
+  if (!user) {
+    openActionLogin(() => openCheckoutForm());
+    return;
+  }
 
   closeCart();
-
   document.getElementById('checkoutName').value =
     user.user_metadata?.full_name || user.user_metadata?.name || '';
 
@@ -5728,6 +5728,44 @@ pkSupabase.auth.onAuthStateChange((_event, session) => {
   updateOrdersAdminButton(user);
   if (user) await loadMyOrders();
 })();
+
+
+let pendingProtectedAction = null;
+
+function openActionLogin(action = null) {
+  pendingProtectedAction = action;
+  const gate = document.getElementById('authGate');
+  gate?.classList.remove('hidden');
+  gate?.classList.add('action-login-open');
+  setGateMode('login');
+  setGateMessage('Log in or create an account to continue.');
+}
+
+function closeActionLogin() {
+  const gate = document.getElementById('authGate');
+  gate?.classList.remove('action-login-open');
+  gate?.classList.add('hidden');
+  pendingProtectedAction = null;
+}
+
+function runPendingProtectedAction() {
+  const action = pendingProtectedAction;
+  pendingProtectedAction = null;
+  const gate = document.getElementById('authGate');
+  gate?.classList.remove('action-login-open');
+  gate?.classList.add('hidden');
+  if (typeof action === 'function') setTimeout(action, 150);
+}
+
+
+async function openAccountSmart() {
+  const { data } = await pkSupabase.auth.getSession();
+  if (!data.session?.user) {
+    openActionLogin(() => openAccount());
+    return;
+  }
+  openAccount();
+}
 
 </script>
 
