@@ -3007,25 +3007,12 @@
   .admin-orders-stats{grid-template-columns:1fr 1fr}
   .checkout-card,.admin-orders-card{padding:24px 18px;margin:10px auto}
 }
+.auth-gate.action-login-open { display:flex !important; }
 
 
-    .session-restoring {
-      position: fixed;
-      inset: 0;
-      z-index: 9999;
-      background: #f7f7f5;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 900;
-      letter-spacing: 1px;
-    }
-    .session-restoring.hidden {
-      display: none;
-    }
-
-
-    .auth-gate.action-login-open { display:flex !important; }
+    /* Public browsing: login opens only for protected actions */
+    #authGate { display: none !important; }
+    #authGate.action-login-open { display: flex !important; }
 
 </style>
 
@@ -3045,9 +3032,6 @@
 </head>
 
 <body>
-<div class="session-restoring" id="sessionRestoring">PK CLOTHING</div>
-
-
 <div class="admin-orders-modal" id="adminOrdersModal" aria-hidden="true">
   <div class="admin-orders-card">
     <button class="admin-orders-close" type="button" onclick="closeAdminOrders()">×</button>
@@ -4153,6 +4137,8 @@ if (reviewForm) {
 renderReviews();
 
 
+let pendingProtectedAction = null;
+
 // ===== Supabase authentication =====
 const SUPABASE_URL = 'https://czhgeqrrobvxphwzdbii.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_ATqZhQCB9qZJFwNy2dBFpw_JudmKHj3';
@@ -4918,20 +4904,23 @@ async function loginWithPassword() {
 
 function unlockWebsite(user) {
   currentSupabaseUser = user || null;
-  document.getElementById('sessionRestoring')?.classList.add('hidden');
   updateAccountHeader(currentSupabaseUser);
   document.body.classList.remove('auth-locked');
+
   const gate = document.getElementById('authGate');
   gate?.classList.remove('action-login-open');
   gate?.classList.add('hidden');
-  if (pendingProtectedAction) runPendingProtectedAction();
+
+  if (pendingProtectedAction) {
+    runPendingProtectedAction();
+  }
 }
 
 function lockWebsite() {
   currentSupabaseUser = null;
-  document.getElementById('sessionRestoring')?.classList.add('hidden');
   updateAccountHeader(null);
   document.body.classList.remove('auth-locked');
+
   const gate = document.getElementById('authGate');
   gate?.classList.remove('action-login-open');
   gate?.classList.add('hidden');
@@ -5730,7 +5719,6 @@ pkSupabase.auth.onAuthStateChange((_event, session) => {
 })();
 
 
-let pendingProtectedAction = null;
 
 function openActionLogin(action = null) {
   pendingProtectedAction = action;
@@ -5766,6 +5754,17 @@ async function openAccountSmart() {
   }
   openAccount();
 }
+
+
+window.addEventListener('DOMContentLoaded', () => {
+  document.body.classList.remove('auth-locked');
+
+  // Never leave the public storefront blocked.
+  const gate = document.getElementById('authGate');
+  if (!gate?.classList.contains('action-login-open')) {
+    gate?.classList.add('hidden');
+  }
+});
 
 </script>
 
